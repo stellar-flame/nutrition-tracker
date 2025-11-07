@@ -7,6 +7,10 @@
     "module": "ESNext",
     "types": ["vite/client"],
     "skipLibCheck": true,
+    "baseUrl": ".",               // required for "paths" to work
+    "paths": {
+      "@/*": ["src/*"]            // matches the Vite alias
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
