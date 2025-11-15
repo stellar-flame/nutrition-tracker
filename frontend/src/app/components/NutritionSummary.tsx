@@ -1,5 +1,6 @@
 
 import styles from './NutritionSummary.module.css';
+import { useNutritionSummary } from '@/app/hooks/useNutritionSummary';
 
 function StatRow({
   label,
@@ -20,17 +21,13 @@ function StatRow({
   );
 }
 export default function NutritionSummary() {
-    const data = { 
-    date: '2024-06-01',
-    caloriesKcal: 2200,
-    proteinG: 150,
-    carbsG: 250,
-    fatG: 70,
-    fiberG: 30,
-    sugarG: 90,
-    sodiumMg: 2300,
-  };
-  return (
+
+  const { data, isLoading, error } = useNutritionSummary();
+
+  if (isLoading) return <div>Loading…</div>;
+  if (error) return <div role="alert">Failed to load</div>;
+  if (!data) return <div>No data</div>;
+return (
     <section role="region" aria-label="Nutrition summary" className={styles.section}>
       <header className={styles.header}>
         <h2 className={styles.title}>Today’s nutrition</h2>

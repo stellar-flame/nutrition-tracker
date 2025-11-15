@@ -1,0 +1,64 @@
+# Python byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment variables and local overrides (keep an example file in git)
+.env
+.env.*
+!.env.example
+
+# Distribution / packaging
+build/
+dist/
+wheels/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.pytest_cache/
+.nox/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+htmlcov/
+
+# Type checkers / linters caches
+.mypy_cache/
+.pytype/
+.pyre/
+.ruff_cache/
+
+# Logs
+*.log
+uvicorn.log
+
+# Databases / local data
+*.db
+*.sqlite
+*.sqlite3
+instance/
+data/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+
+# Pyenv
+.python-version
