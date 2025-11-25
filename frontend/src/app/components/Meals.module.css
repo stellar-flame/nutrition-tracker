@@ -1,0 +1,79 @@
+/* src/app/components/Meals.module.css */
+.section {
+  background: var(--color-surface, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 16px;
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.empty {
+  color: var(--color-muted, #666);
+  margin: 8px 0 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.meal {
+  border: 1px solid var(--color-border, #eee);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.mealHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.mealMeta {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.mealName {
+  font-weight: 600;
+}
+
+.mealTime {
+  color: var(--color-muted, #666);
+  font-size: 13px;
+}
+
+.mealTotal {
+  font-weight: 700;
+}
+
+.mealItems {
+  list-style: none;
+  margin: 0;
+  padding-left: 16px;
+}
+
+.mealItem {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.itemDesc {
+  /* left text */
+}
+
+.itemMeta {
+  color: var(--color-muted, #666);
+  margin-left: 8px;
+}

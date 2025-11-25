@@ -2,10 +2,9 @@
 import type { NutritionSummary } from "@/types/nutrition";
 import { api } from '@/lib/apiClient';
 import { useQuery } from '@tanstack/react-query';
+import { getToday } from './useDate';
 
-function getToday(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+
 
 async function fetchNutritionSummary(date:string): Promise<NutritionSummary> {
   const { data } = await api.get<NutritionSummary>('/nutrition/summary', {
