@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from models.nutrition import Meal, MealItem, NutritionSummary
+from app.models.nutrition import Meal, MealItem, NutritionSummary
 from fastapi.params import Query
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +8,7 @@ app = FastAPI()
 
 
 origins = [
-    "http://nutrition-app-web.s3-website-us-east-1.amazonaws.com",
+    "http://nutritionapptracker.com",
     # add https://your-cloudfront-domain.com later if you use CloudFront
 ]
 
