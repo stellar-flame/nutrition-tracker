@@ -1,13 +1,25 @@
+# First Deployment
+I am using this project to learn about deployments in AWS
+
+This is the first simple deployment on AWS using an EC2 container
+
+## Setup VPC
+I set up the VPC for all future development and production simulation of this app based on what I learnt in Cantrill's course.
+
+This is the configuration
+* 10.0.0.0/16 VPC and subnets /20
+* 2 AZs with each AZ having
+  * 1 public subnet
+  * 2 private subnet 
+
+## 
 * **React app** → static files on Amazon Simple Storage Service (S3)
 * **FastAPI backend** → single Amazon Elastic Compute Cloud (EC2) instance in a **public subnet** with a **public IP**
 
-I’ll walk you through just what you need, no extra fluff.
 
 ---
 
 ## 1. React app on S3 (static website)
-
-You might already know some of this, so think of it as a checklist:
 
 1. **Build your React app**
 
@@ -164,7 +176,7 @@ Rebuild (`npm run build`) and re-upload to S3 when you change this.
 
 ## 5. Don’t forget CORS (Cross-Origin Resource Sharing)
 
-Your React app (S3 URL) and FastAPI (EC2 URL) are on **different origins**, so you must configure CORS in FastAPI.
+React app (S3 URL) and FastAPI (EC2 URL) are on **different origins**, so you must configure CORS in FastAPI.
 
 In `main.py` (or wherever you create the app):
 
@@ -189,33 +201,24 @@ app.add_middleware(
 ```
 
 Restart uvicorn and try calling the API from the React app.
-
 ---
 
 ## 6. Where this fits with the “big” VPC design
-
-Right now you are doing:
 
 * ✅ **Simple**:
 
   * React → S3 static site
   * FastAPI → single EC2 with public IP in a public subnet
 
-Later, you can evolve this into:
+Next up:
 
 * Move FastAPI into **private subnets**.
 * Put an **Application Load Balancer (ALB)** in the public subnets.
 * Add a **database** in private database subnets.
 * (Optional) Put CloudFront in front of S3.
 
-But you don’t need any of that to get started.
-
----
-
-If you want next, I can:
-
-* Help you write a tiny **user data script** for EC2 so FastAPI auto-starts on boot, or
-* Help you set up a simple **Nginx + reverse proxy** so you can serve FastAPI on port 80 instead of 8000.
+Things to learn: 
+* **Nginx + reverse proxy** so you can serve FastAPI on port 80 instead of 8000.
 
 
 ## 7 Allocate an Elastic IP
