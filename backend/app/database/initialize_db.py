@@ -1,15 +1,19 @@
 import psycopg2
 from pathlib import Path
+import os
 
-    
-DB_NAME = "nutrition_tracker"
-SUPERUSER = "postgres"
-PASSWORD = "postgres"
-HOST = "localhost"
-PORT = 5432
+if os.getenv("ENV", "local") == "local":
+    from dotenv import load_dotenv
+    load_dotenv()
+
+SUPERUSER = os.getenv("SUPERUSER")
+PASSWORD = os.getenv("PASSWORD")
+HOST = os.getenv("HOST")
+PORT = os.getenv("PORT")
+DB_NAME = os.getenv("DB_NAME")
 
 def create_db():
-    conn = psycopg2.connect(dbname="postgres", user=SUPERUSER, password=PASSWORD, host=HOST, port=PORT)
+    conn = psycopg2.connect(dbname="postgres", user=SUPERUSER, password=PASSWORD, host=HOST, port=PORT)  
     conn.autocommit = True
     try:
         with conn.cursor() as cur:
