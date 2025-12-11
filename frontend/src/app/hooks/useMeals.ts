@@ -11,6 +11,17 @@ export async function fetchMeals(date: string): Promise<Meal[]> {
   return data;
 }
 
+export async function createMeal(description: string, date: string): Promise<Meal> {
+  try {
+    const response = await api.post<Meal>('/nutrition/meals', { description, date });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating meal:', error);
+    throw error;
+  }
+}
+ 
+
 export function useMeals(date: string = getToday()) {
   return useQuery({
     queryKey: ['meals', date],

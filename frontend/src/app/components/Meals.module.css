@@ -12,6 +12,40 @@
   font-size: 18px;
 }
 
+.newMealForm {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.newMealForm input[type="text"] {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border, #dcdcdc);
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.newMealForm button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #2f6fed;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.newMealForm button:hover {
+  background: #255ace;
+}
+
+.newMealForm button:active {
+  transform: translateY(1px);
+}
+
 .empty {
   color: var(--color-muted, #666);
   margin: 8px 0 0;

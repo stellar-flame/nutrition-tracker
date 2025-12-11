@@ -16,3 +16,4 @@ export interface Meal {
     time: string;         // HH:MM (24-hour format)
     serving_size: number; // number of servings
 }
+

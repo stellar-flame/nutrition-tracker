@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel
 from datetime import date
-from typing import List
+from typing import List, Optional
+
 
 class MealBase(SQLModel):
     date: date
@@ -27,6 +28,10 @@ class MealItemRead(MealItemBase):
 class MealRead(MealBase):
     id: int
     items: List[MealItemRead] = []
+
+class MealCreateMinimal(SQLModel):
+    description: str
+    date: Optional[str] = None  # default to today if missing
 
 class NutritionSummary(SQLModel):
     date: str            # YYYY-MM-DD
