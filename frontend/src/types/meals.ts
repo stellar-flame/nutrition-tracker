@@ -11,7 +11,7 @@ export interface MealItem {
 
 export interface Meal { 
     description: string;   // description of the meal
-    mealItems: MealItem[]; // array of meal items
+    items: MealItem[]; // array of meal items
     date: string;         // YYYY-MM-DD
     time: string;         // HH:MM (24-hour format)
     serving_size: number; // number of servings

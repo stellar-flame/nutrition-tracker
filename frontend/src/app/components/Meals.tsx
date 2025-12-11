@@ -17,7 +17,7 @@ export default function Meals() {
       ) : (
         <ul role="list" className={styles.list}>
           {meals.map((meal, idx) => {
-            const totalKcal = meal.mealItems.reduce((sum, it) => sum + it.caloriesKcal, 0);
+            const totalKcal = meal.items.reduce((sum, it) => sum + it.caloriesKcal, 0);
             const key = `${meal.date}-${meal.time}-${idx}`;
             return (
               <li key={key} role="listitem" className={styles.meal} aria-label={`${meal.description} at ${meal.time}`}>
@@ -30,7 +30,7 @@ export default function Meals() {
                 </div>
 
                 <ul role="list" className={styles.mealItems}>
-                  {meal.mealItems.map((it, i) => (
+                  {meal.items.map((it, i) => (
                     <li key={i} role="listitem" className={styles.mealItem}>
                       <span className={styles.itemDesc}>{it.description}</span>
                       <span className={styles.itemMeta}>{it.caloriesKcal} kcal</span>

@@ -1,14 +1,19 @@
 from fastapi import FastAPI
-from app.models.nutrition import Meal, MealItem, NutritionSummary
+from sqlmodel import Session
+from app.models.schemas import MealRead, NutritionSummary, MealItemRead
 from fastapi.params import Query
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Depends
+from app.database.database import get_session
+from app.repositories import meal_repo
 
 app = FastAPI()
 
 
 origins = [
     "http://nutritionapptracker.com",
+    "http://localhost:5173",
     # add https://your-cloudfront-domain.com later if you use CloudFront
 ]
 
@@ -26,80 +31,25 @@ async def root():
 
 
 @app.get("/nutrition/summary", response_model=NutritionSummary)
-def get_nutrition_summary(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")]):
-    print(f"Fetching nutrition summary for date: {date}")
-    # Temp stub implementation
-    base = sum(map(int, date.replace("-", ""))) % 200
+def get_nutrition_summary(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")], db: Session = Depends(get_session)):
+    meals = meal_repo.get_meals_by_date(db, date)
+    mealreads = [MealRead.model_validate(meal) for meal in meals]
+    meal_items = [item for meal in mealreads for item in meal.items]
     return NutritionSummary(
         date=date,
-        caloriesKcal=2100 + base,
-        proteinG=140 + base % 20,
-        carbsG=240 + base % 30,
-        fatG=70 + base % 10,
-        fiberG=28 + base % 6,
-        sugarG=80 + base % 15,
-        sodiumMg=2200 + (base % 400),
+        caloriesKcal=sum(meal.caloriesKcal for meal in meal_items),
+        proteinG=sum(meal.proteinG for meal in meal_items),
+        carbsG=sum(meal.carbsG for meal in meal_items),
+        fatG=sum(meal.fatG for meal in meal_items),
+        fiberG=sum(meal.fiberG for meal in meal_items),  
+        sugarG=sum(meal.sugarG for meal in meal_items),
+        sodiumMg=sum(meal.sodiumMg for meal in meal_items)
     )
 
 
-@app.get("/nutrition/meals", response_model=list[Meal])
-def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")]):
-    print(f"Fetching meals for date: {date}")
-    # Temp stub implementation
-
-    return [ Meal(
-        description="Apple and Peanut Butter",
-        date=date,
-        time="10:30",
-        serving_size=1.0,
-        mealItems=[
-            MealItem(
-                description="Apple",
-                caloriesKcal=90,
-                proteinG=1,
-                carbsG=50,
-                fatG=20,
-                fiberG=5,
-                sugarG=10,
-                sodiumMg=600,
-            ),
-            MealItem(
-                description="Peanut Butter",
-                caloriesKcal=180,
-                proteinG=7,
-                carbsG=8,
-                fatG=16,
-                fiberG=3,
-                sugarG=4,
-                sodiumMg=150,
-            )],
-        ),
-        Meal(
-            description="Chicken Salad",
-            date=date,
-            time="13:00",
-            serving_size=1.0,
-            mealItems=[
-                MealItem(
-                    description="Grilled Chicken Breast",
-                    caloriesKcal=220,
-                    proteinG=40,
-                    carbsG=0,
-                    fatG=5,
-                    fiberG=0,
-                    sugarG=0,
-                    sodiumMg=400,
-                ),
-                MealItem(
-                    description="Mixed Greens",
-                    caloriesKcal=50,
-                    proteinG=2,
-                    carbsG=10,
-                    fatG=1,
-                    fiberG=4,
-                    sugarG=2,
-                    sodiumMg=100,
-                ),
-            ],
-        ),
-    ]
+@app.get("/nutrition/meals", response_model=list[MealRead])
+def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")], db: Session = Depends(get_session)):
+    meals = meal_repo.get_meals_by_date(db, date)
+    reads = [MealRead.model_validate(meal) for meal in meals] 
+    print(reads)
+    return reads
