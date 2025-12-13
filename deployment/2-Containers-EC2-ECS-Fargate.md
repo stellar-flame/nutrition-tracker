@@ -24,7 +24,7 @@ docker buildx build --platform linux/amd64,linux/arm64 -t username/nutrition-tra
 
 ## For AWS, prefer ECR over Docker Hub (faster pulls, IAM auth). Create an ECR repo, then:
 
-*I used DockerHub* 
+**I used DockerHub**
 
 aws ecr get-login-password --region <region> \
   | docker login --username AWS --password-stdin <acct>.dkr.ecr.<region>.amazonaws.com
@@ -37,6 +37,7 @@ docker push <acct>.dkr.ecr.<region>.amazonaws.com/nutrition-tracker:latest
 
 
 ### Install Docker Engine on EC2 Instance
+```
 sudo dnf install docker
 sudo service docker start
 sudo usermod -a -G docker ec2-user
@@ -46,6 +47,7 @@ LOGOUT and login
 sudo su - ec2-user
 docker pull username/nutrition-tracker:latest
 docker run --rm -p 8000:8000 yourname/nutrition-tracker:latest
+```
 
 ## 2. Next, deploy to ECS cluster 
 

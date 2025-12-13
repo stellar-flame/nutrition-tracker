@@ -1,8 +1,8 @@
 These are learning steps to building this app and learning AWS
 
 # TODO 
-1. RDS + schema + FastAPI integration (what we discussed earlier).
-2. IaC (Infrastructure as Code) for what you have (Path A) – capture ECS + S3 (and later RDS) in CDK/CloudFormation.
+1. Cloudformation entire VPC-EC2-RDS stack
+2. Fargate - RDS 
 3. CI/CD pipelines (Path B) – automate image builds and S3 deploys.
 4. HTTPS via ALB + ACM and CloudFront – secure the stack.
 5. Observability (Path C) – logging, metrics, alarms.
@@ -14,3 +14,4 @@ These are learning steps to building this app and learning AWS
    * EC2
    * ECS - Self Managed
    * ECS - Fargate
+3. RDS + schema + FastAPI integration (what we discussed earlier).
