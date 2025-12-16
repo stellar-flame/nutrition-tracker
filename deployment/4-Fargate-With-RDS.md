@@ -36,9 +36,14 @@ Add inline permissions to role:
 ### 3. Create Cluster
 
 ### 4. Create a Service with task definition
-   * In the section **Troubleshooting configuration - recommended**
+    * In the section **Troubleshooting configuration - recommended**
         * Enable 'Turn on ECS Exec' (Was hard to find') 
+    * Create a Secuirty Group 
 
-### 5. Once container is running connect to it and run the scripts to seed database
-   * python -m app.database.seed
+### 5. Update RDS security to allow inbound from Service Security Group
+    * Add inbound rule Postgres 5432 soucrce Security Group created for service
+  
+### 6. Once container is running connect to it and run the scripts to seed database
+    * python -m app.database.seed
 *I didn't actually do this step since my db was already seeded from th previous deployment*
+
