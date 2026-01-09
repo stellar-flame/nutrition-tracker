@@ -43,7 +43,6 @@ Add inline permissions to role:
 ### 5. Update RDS security to allow inbound from Service Security Group
     * Add inbound rule Postgres 5432 soucrce Security Group created for service
   
-### 6. Once container is running connect to it and run the scripts to seed database
+### 6. Once container is running connect to it through console and run the scripts to seed database
     * python -m app.database.seed
 *I didn't actually do this step since my db was already seeded from th previous deployment*
-
