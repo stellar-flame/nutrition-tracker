@@ -1,18 +1,22 @@
 import datetime
-from fastapi import FastAPI
+import logging
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from sqlmodel import Session
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from app.models.schemas import MealRead, NutritionSummary, MealCreateMinimal
 from fastapi.params import Query
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends
-from app.database.database import get_session
+from app.database.database import get_engine, get_session
 from app.repositories import meal_repo
 from app.models.db_models import MealItem, Meal
 from datetime import date
 
 app = FastAPI()
-
+log = logging.getLogger("uvicorn.error")
 
 origins = [
     "http://nutritionapptracker.com",
@@ -31,6 +35,31 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+@app.get("/db_health")
+def db_health():
+    try:
+        with Session(get_engine()) as session:
+            session.exec(text("SELECT 1"))
+        return {"status": "ok"}
+    except OperationalError:
+        return JSONResponse(status_code=503, content={"status": "db_unavailable"})
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    log.warning("HTTP error on %s %s: %s", request.method, request.url.path, exc.detail)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"message": exc.detail},
+    )
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request, exc):
+    log.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"message": f"An error occurred: {str(exc)}"},
+    )
 
 
 @app.get("/nutrition/summary", response_model=NutritionSummary)

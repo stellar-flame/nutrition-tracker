@@ -25,8 +25,10 @@ export default function NutritionSummary() {
   const { data, isLoading, error } = useNutritionSummary();
 
   if (isLoading) return <div>Loading…</div>;
-  if (error) return <div role="alert">Failed to load</div>;
-  if (!data) return <div>No data</div>;
+  if (error) {
+    return <div role="alert">{error.userMessage ?? 'Failed to load'}</div>;
+  }
+  if (!data) return <div>No summary available</div>;
 return (
     <section role="region" aria-label="Nutrition summary" className={styles.section}>
       <header className={styles.header}>

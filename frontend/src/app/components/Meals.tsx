@@ -20,7 +20,7 @@ export default function Meals() {
     };
 
     if (isLoading) return <div>Loading…</div>;
-    if (error) return <div role="alert">Failed to load</div>;
+    if (error) return <div role="alert">{error.userMessage ?? 'Failed to load'}</div>;
     if (!meals) return <div>No data</div>;
     return (
     <section role="region" aria-label="Meals logged today" className={styles.section}>

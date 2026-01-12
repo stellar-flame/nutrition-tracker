@@ -1,13 +1,13 @@
 # backend/seed.py
 from datetime import date
 from sqlmodel import Session
-from app.database.database import engine
+from app.database.database import get_engine
 from app.models.db_models import Meal, MealItem
 
 def main():
     today = date.today()
     # with statement ensures the session is closed after the block is executed
-    with Session(engine) as session:
+    with Session(get_engine()) as session:
         meal = Meal(
             date=today,
             time="10:30",
