@@ -66,7 +66,7 @@ psql connects to localhost:5433, but that traffic is encrypted over SSH to EC2, 
 ssh -i NutritionApp.pem -L 5433:${DBENDPOINT}:5432 ec2-user@<EC2_PUBLIC_IP>
 ```
 
-Breakdown:
+Breakdown (Explanation):
 
 ssh ec2-user@<EC2_PUBLIC_IP>
 Opens an SSH connection to your EC2 instance.

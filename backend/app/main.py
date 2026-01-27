@@ -14,6 +14,7 @@ from app.database.database import get_engine, get_session
 from app.repositories import meal_repo
 from app.models.db_models import MealItem, Meal
 from datetime import date
+from app.services import derive_nutrition
 
 app = FastAPI()
 log = logging.getLogger("uvicorn.error")
@@ -32,7 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+@app.get("/health")
 async def root():
     return {"message": "Hello World"}
 
@@ -88,13 +89,14 @@ def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", descrip
 @app.post("/nutrition/meals", response_model=MealRead, status_code=201)
 def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session)):
     meal_date = payload.date or date.today()
-    meal_time = datetime.datetime.now().strftime("%H:%M")
-    # TODO: replace with your AI-derived items
-    items = [MealItem(
-        description=payload.description,
-        caloriesKcal=300, proteinG=20, carbsG=30,
-        fatG=10, fiberG=5, sugarG=8, sodiumMg=400
-    )]
+    meal_time = datetime.datetime.now().strftime("%H:%M") # AI-derived nutrition (replaces hardcoded values)
+    
+    item_data = derive_nutrition(payload.description)
+    
+    print("Derived nutrition items:", item_data)  # Debugging line
+
+    items = [MealItem(**item.model_dump()) for item in item_data]
+  
     meal = Meal(
         date=meal_date,
         time=meal_time,

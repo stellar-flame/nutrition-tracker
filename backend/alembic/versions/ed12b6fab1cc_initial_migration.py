@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 97cd6c52af47
+Revision ID: ed12b6fab1cc
 Revises: 
-Create Date: 2026-01-12 14:11:45.855081
+Create Date: 2026-01-26 16:51:18.742318
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = '97cd6c52af47'
+revision: str = 'ed12b6fab1cc'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -32,13 +32,13 @@ def upgrade() -> None:
     )
     op.create_table('meal_items',
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('caloriesKcal', sa.Integer(), nullable=False),
+    sa.Column('caloriesKcal', sa.Float(), nullable=False),
     sa.Column('proteinG', sa.Float(), nullable=False),
     sa.Column('carbsG', sa.Float(), nullable=False),
     sa.Column('fatG', sa.Float(), nullable=False),
     sa.Column('fiberG', sa.Float(), nullable=False),
     sa.Column('sugarG', sa.Float(), nullable=False),
-    sa.Column('sodiumMg', sa.Integer(), nullable=False),
+    sa.Column('sodiumMg', sa.Float(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('meal_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['meal_id'], ['meals.id'], ),

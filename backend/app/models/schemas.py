@@ -12,13 +12,13 @@ class MealBase(SQLModel):
     
 class MealItemBase(SQLModel):
     description: str
-    caloriesKcal: int
+    caloriesKcal: float
     proteinG: float
     carbsG: float
     fatG: float
     fiberG: float
     sugarG: float
-    sodiumMg: int
+    sodiumMg: float
 
 
 class MealItemRead(MealItemBase):
@@ -35,10 +35,10 @@ class MealCreateMinimal(SQLModel):
 
 class NutritionSummary(SQLModel):
     date: str            # YYYY-MM-DD
-    caloriesKcal: int
-    proteinG: int
-    carbsG: int
-    fatG: int
-    fiberG: int
-    sugarG: int
-    sodiumMg: int
+    caloriesKcal: float
+    proteinG: float
+    carbsG: float
+    fatG: float
+    fiberG: float
+    sugarG: float
+    sodiumMg: float

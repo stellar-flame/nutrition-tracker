@@ -32,11 +32,6 @@ Parameters:
     Description: Your public IP address with /32
     Default: 67.160.34.112/32  
 
-  ImageID:
-    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
-    Description: SSM Parameter for the latest Amazon Linux 2 AMI ID
-
   DBUsername:
     Type: String
     Default: postgres
@@ -52,6 +47,11 @@ Parameters:
     Type: String
     Default: nutrition_tracker
     Description: Database name for the RDS instance
+
+  ImageTag:
+    Type: String
+    Default: dev-20260126-150546
+    Description: Docker
 
 Resources:
   NutritionVpc:
@@ -178,6 +178,23 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+      - PolicyName: 'read-openai-key'
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+              Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/OPENAI_API_KEY"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: "*"
+              Condition:
+                StringEquals:
+                  kms:ViaService: !Sub "ssm.${AWS::Region}.amazonaws.com"
 
   TaskRole:
     Type: AWS::IAM::Role
@@ -243,7 +260,7 @@ Resources:
       TaskRoleArn: !GetAtt TaskRole.Arn
       ContainerDefinitions:
         - Name: nutrition-container
-          Image: havz/nutrition-tracker-api:latest
+          Image: !Sub "havz/nutrition-tracker-api:${ImageTag}"
           PortMappings:
             - ContainerPort: 8000
           Environment:
@@ -257,6 +274,9 @@ Resources:
               awslogs-group: !Ref ApiLogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: nutrition
+          Secrets:
+            - Name: OPENAI_API_KEY
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/OPENAI_API_KEY"
 
   ECSCluster:
     Type: AWS::ECS::Cluster
@@ -270,7 +290,7 @@ Resources:
       Port: 8000
       Protocol: HTTP
       TargetType: ip
-      HealthCheckPath: /
+      HealthCheckPath: /health
       Matcher:
         HttpCode: 200-299
 
@@ -301,6 +321,7 @@ Resources:
     Type: AWS::ECS::Service
     DependsOn:
       - RDSInstance
+      - ALBListener
     Properties:
       Cluster: !Ref ECSCluster
       ServiceName: nutrition-ecs-service
@@ -348,6 +369,8 @@ Resources:
   
   RDSInstance:
     Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
     Properties:
       DBInstanceIdentifier: nutrition-rds-instance
       AllocatedStorage: 20
