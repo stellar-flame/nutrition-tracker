@@ -7,11 +7,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 
 export default function Meals() {
-    const { data: meals = [], isLoading, error } = useMeals(getToday());
+    const { data: meals = [], isLoading, error: errorLoadingMeals } = useMeals(getToday());
     const qc = useQueryClient();
     const [newDesc, setNewDesc] = useState("");
     
-    const mutation = useMutation({  
+    const { mutate: mutateFn, isPending, error: errorAddingMeal, reset } = useMutation({  
         mutationFn: (description: string) => createMeal(description, getToday()),
         onSuccess: async () => {
             await Promise.all([
@@ -21,31 +21,40 @@ export default function Meals() {
             setNewDesc("");
         }
     });
-    const add_meal_button_text = mutation.isPending ? "Adding..." : "Add";
+
+    const add_meal_button_text = isPending ? "Adding..." : "Add";
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newDesc.trim()) return;
-        if (!newDesc.trim()) return;
-      mutation.mutate(newDesc.trim());
+      mutateFn(newDesc.trim());
     };
 
     if (isLoading) return <div>Loading…</div>;
-    if (error) return <div role="alert">{error.userMessage ?? 'Failed to load'}</div>;
+    if (errorLoadingMeals) return <div role="alert">{errorLoadingMeals?.message ?? 'Failed to load'}</div>;
     if (!meals) return <div>No data</div>;
     return (
     <section role="region" aria-label="Meals logged today" className={styles.section}>
       <h2 className={styles.title}>Meals today</h2>
       {/* add input box to capture new meal*/}
+      {errorAddingMeal && (
+        <div role="alert" className={styles.error}>
+          {errorAddingMeal?.message ?? 'Failed to add meal'}
+        </div>
+      )}
       <form role="form" className={styles.newMealForm} onSubmit={handleSubmit}>
         <input 
           type="text"
           placeholder="New meal description"
           value={newDesc}
-          onChange={(e) => setNewDesc(e.target.value)}
-          disabled={mutation.isPending}
+          onChange={(e) => {
+            if (errorAddingMeal) reset();
+            setNewDesc(e.target.value)} 
+          }
+
+          disabled={isPending}
         />
-        <button type="submit" disabled={mutation.isPending}>{add_meal_button_text}</button>
+        <button type="submit" disabled={isPending}>{add_meal_button_text}</button>
       </form>
       {meals.length === 0 ? (
         <p className={styles.empty}>No meals logged yet.</p>
