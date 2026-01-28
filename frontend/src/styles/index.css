@@ -67,3 +67,16 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: transparent;
+}
+button:disabled:hover {
+  border-color: transparent;
+}
+button:disabled:active {
+  transform: none;
+  pointer-events: none;
+}

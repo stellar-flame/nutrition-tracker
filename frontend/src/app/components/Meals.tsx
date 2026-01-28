@@ -2,7 +2,7 @@ import styles from './Meals.module.css';
 import { useMeals, createMeal } from '@/app/hooks/useMeals';
 import { useState } from "react";
 import { getToday } from '@/app/hooks/useDate';
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 
 
@@ -10,13 +10,24 @@ export default function Meals() {
     const { data: meals = [], isLoading, error } = useMeals(getToday());
     const qc = useQueryClient();
     const [newDesc, setNewDesc] = useState("");
+    
+    const mutation = useMutation({  
+        mutationFn: (description: string) => createMeal(description, getToday()),
+        onSuccess: async () => {
+            await Promise.all([
+                qc.invalidateQueries({ queryKey: ["meals", getToday()] }),
+                qc.invalidateQueries({ queryKey: ["nutrition-summary", getToday()] })
+            ]);
+            setNewDesc("");
+        }
+    });
+    const add_meal_button_text = mutation.isPending ? "Adding..." : "Add";
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newDesc.trim()) return;
-        await createMeal(newDesc.trim(), getToday());
-        await qc.invalidateQueries({ queryKey: ["meals", getToday()] });
-        setNewDesc("");
+        if (!newDesc.trim()) return;
+      mutation.mutate(newDesc.trim());
     };
 
     if (isLoading) return <div>Loading…</div>;
@@ -27,13 +38,14 @@ export default function Meals() {
       <h2 className={styles.title}>Meals today</h2>
       {/* add input box to capture new meal*/}
       <form role="form" className={styles.newMealForm} onSubmit={handleSubmit}>
-        <input
+        <input 
           type="text"
-          placeholder="Add new meal"
+          placeholder="New meal description"
           value={newDesc}
           onChange={(e) => setNewDesc(e.target.value)}
+          disabled={mutation.isPending}
         />
-        <button type="submit">Add</button>
+        <button type="submit" disabled={mutation.isPending}>{add_meal_button_text}</button>
       </form>
       {meals.length === 0 ? (
         <p className={styles.empty}>No meals logged yet.</p>
