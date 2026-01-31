@@ -69,7 +69,19 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.mealHeader:hover {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
 }
 
 .mealMeta {
@@ -95,6 +107,9 @@
   list-style: none;
   margin: 0;
   padding-left: 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.1s ease-out, margin-top 0.1s ease-out;
 }
 
 .mealItem {
@@ -103,11 +118,25 @@
   margin: 4px 0;
 }
 
-.itemDesc {
-  /* left text */
-}
 
 .itemMeta {
   color: var(--color-muted, #666);
   margin-left: 8px;
+}
+
+.chevron {
+  display: inline-block;
+  font-size: 10px;
+  margin-right: 6px;
+  transition: transform 0.1s ease;
+}
+
+.chevronExpanded {
+  transform: rotate(90deg);
+}
+
+
+.mealItemsExpanded {
+  max-height: 500px;
+  margin-top: 8px;
 }
