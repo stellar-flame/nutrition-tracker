@@ -34,6 +34,7 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  text-align: center;
 }
 
 button {
@@ -79,4 +80,10 @@ button:disabled:hover {
 button:disabled:active {
   transform: none;
   pointer-events: none;
+}
+
+main {
+  width: 100%;
+  max-width: 1200px;  /* Adjust this value: 1000px, 1200px, 1400px, etc. */
+  min-width: 600px;  /* Ensure minimum width for layout stability */
 }

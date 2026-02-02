@@ -83,6 +83,16 @@
   background: rgba(0, 0, 0, 0.02);
   border-radius: 4px;
 }
+.mealHeader:focus {
+  outline: none;  /* Removes the default outline */
+}
+
+/* But for accessibility, add a visible focus state for keyboard users: */
+.mealHeader:focus-visible {
+  outline: 2px solid #2f6fed;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
 .mealMeta {
   display: flex;
@@ -139,4 +149,53 @@
 .mealItemsExpanded {
   max-height: 500px;
   margin-top: 8px;
+}
+
+.mealItem {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border, #eee);
+}
+
+.mealItem:last-child {
+  border-bottom: none;
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.itemDesc {
+  font-weight: 500;
+}
+
+.itemCalories {
+  font-weight: 600;
+  color: var(--color-primary, #2f6fed);
+}
+
+.itemNutrients {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 12px;
+}
+
+.nutrient {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+.nutrientLabel {
+  color: var(--color-muted, #666);
+}
+
+.nutrientValue {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }

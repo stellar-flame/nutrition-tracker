@@ -96,8 +96,36 @@ export default function Meals() {
                 <ul role="list" className={`${styles.mealItems} ${isExpanded ? styles.mealItemsExpanded : ''}`} id={`items-${key}`} aria-hidden={!isExpanded}>
                   {meal.items.map((it, i) => (
                     <li key={i} role="listitem" className={styles.mealItem}>
-                      <span className={styles.itemDesc}>{it.description}</span>
-                      <span className={styles.itemMeta}>{it.caloriesKcal} kcal</span>
+                       <div className={styles.itemHeader}>
+                          <span className={styles.itemDesc}>{it.description}</span>
+                          <span className={styles.itemCalories}>{it.caloriesKcal} kcal</span>
+                        </div>
+                        <div className={styles.itemNutrients}>
+                          <span className={styles.nutrient}>
+                            <span className={styles.nutrientLabel}>Protein</span>
+                            <span className={styles.nutrientValue}>{it.proteinG}g</span>
+                          </span>
+                          <span className={styles.nutrient}>
+                            <span className={styles.nutrientLabel}>Carbs</span>
+                            <span className={styles.nutrientValue}>{it.carbsG}g</span>
+                          </span>
+                          <span className={styles.nutrient}>
+                            <span className={styles.nutrientLabel}>Fat</span>
+                            <span className={styles.nutrientValue}>{it.fatG}g</span>
+                          </span>
+                          <span className={styles.nutrient}>
+                            <span className={styles.nutrientLabel}>Fiber</span>
+                            <span className={styles.nutrientValue}>{it.fiberG}g</span>
+                          </span>
+                          <span className={styles.nutrient}>
+                            <span className={styles.nutrientLabel}>Sugar</span>
+                            <span className={styles.nutrientValue}>{it.sugarG}g</span>
+                          </span>
+                          <span className={styles.nutrient}>
+                            <span className={styles.nutrientLabel}>Sodium</span>
+                            <span className={styles.nutrientValue}>{it.sodiumMg}mg</span>
+                          </span>
+                        </div>
                     </li>
                   ))}
                 </ul>

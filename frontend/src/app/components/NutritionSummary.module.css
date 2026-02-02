@@ -3,6 +3,8 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   padding: var(--space-4);
+  max-width: 600px;  /* Adjust: 350px, 400px, 450px */
+  margin: 0 auto;
 }
 
 .header {

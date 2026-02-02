@@ -5,7 +5,7 @@ import Meals from "@/app/components/Meals";
 export default function Index() {
   return (
     <main style={{ padding: 24 }}>
-      <h1>Nutrition Tracker (Local Dev)</h1>
+      <h1>Nutrition Tracker</h1>
       <NutritionSummary />
       <Meals />
     </main>
