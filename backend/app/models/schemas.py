@@ -1,25 +1,30 @@
 from sqlmodel import SQLModel
 from datetime import date
 from typing import List, Optional
+from enum import StrEnum, auto
 
+
+class MealStatus(StrEnum):
+    PENDING = auto()
+    COMPLETED = auto()
 
 class MealBase(SQLModel):
     date: date
     time: str
     description: str
-    serving_size: float
+    serving_size: float = 1.0
+    status: MealStatus = MealStatus.PENDING
 
-    
 class MealItemBase(SQLModel):
     description: str
-    caloriesKcal: float
-    proteinG: float
-    carbsG: float
-    fatG: float
-    fiberG: float
-    sugarG: float
-    sodiumMg: float
-
+    caloriesKcal: float = 0.0   
+    proteinG: float = 0.0
+    carbsG: float = 0.0
+    fatG: float = 0.0
+    fiberG: float = 0.0
+    sugarG: float = 0.0
+    sodiumMg: float = 0.0
+    
 
 class MealItemRead(MealItemBase):
     id: int

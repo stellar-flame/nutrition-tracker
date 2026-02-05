@@ -1,14 +1,17 @@
+import asyncio
 from typing import Annotated
 import datetime
 from sqlmodel import Session
+from app.ports.nutrition_provider import NutritionProvider
 from app.repositories import meal_repo
 from app.models.schemas import MealRead, MealCreateMinimal
-from app.models.db_models import MealItem, Meal
-from app.services import derive_nutrition   
+from app.models.db_models import  Meal
+from app.models.schemas import MealStatus
 from fastapi import APIRouter, Depends, Query
 from app.database.database import get_session
 from app.models.schemas import NutritionSummary
 from datetime import date
+from app.api.dependencies import get_nutrition_provider
 
 router = APIRouter(prefix="/nutrition", tags=["nutrition"])    
 
@@ -36,22 +39,20 @@ def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", descrip
     return reads
 
 @router.post("/meals", response_model=MealRead, status_code=201)
-def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session)):
+async def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session), nutrition_provider: NutritionProvider = Depends(get_nutrition_provider)):
     meal_date = payload.date or date.today()
-    meal_time = datetime.datetime.now().strftime("%H:%M") # AI-derived nutrition (replaces hardcoded values)
+    meal_time = datetime.datetime.now().strftime("%H:%M:%S") # AI-derived nutrition (replaces hardcoded values)
     
-    item_data = derive_nutrition(payload.description)
-    
-    print("Derived nutrition items:", item_data)  # Debugging line
-
-    items = [MealItem(**item.model_dump()) for item in item_data]
-  
     meal = Meal(
         date=meal_date,
         time=meal_time,
         description=payload.description,
-        serving_size=1.0,
-        items=items,
+        items=[],
+        status=MealStatus.PENDING
     )
     saved = meal_repo.create_meal(db, meal)
+    
+    asyncio.create_task(
+        nutrition_provider.run_nutrition_lookup(payload.description, meal_id=saved.id)
+    )
     return MealRead.model_validate(saved)

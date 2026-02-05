@@ -76,22 +76,47 @@ export default function Meals() {
             const totalKcal = meal.items.reduce((sum, it) => sum + it.caloriesKcal, 0);
             const key = `${meal.date}-${meal.time}-${idx}`;
             const isExpanded = expandedMeals.has(key);
-            
+             const isPending = meal.status === 'pending';
+  
+        // Pending/Processing state
+        if (isPending) {
+          return (
+            <li key={key} className={`${styles.meal} ${styles.mealPending}`}>
+              <div className={styles.pendingHeader}>
+                <span className={styles.pendingTitle}>{meal.description}</span>
+                <span className={styles.pendingBadge}>
+                  <span className={styles.spinner}></span>
+                  Analyzing nutrition...
+                </span>
+              </div>
+              <span className={styles.mealTime}>{meal.time}</span>
+            </li>
+          );
+        }
+        else
             return (
               <li key={key} role="listitem" className={styles.meal} aria-label={`${meal.description} at ${meal.time}`}>
-                <button 
-                  className={styles.mealHeader}
-                  onClick={() => toggleMeal(key)}
-                  aria-expanded={isExpanded}
-                  aria-controls={`items-${key}`}
-                >
-                  <div className={styles.mealMeta}>
-                    <span className={`${styles.chevron} ${isExpanded ? styles.chevronExpanded : ''}`}>▶</span>
-                    <strong className={styles.mealName}>{meal.description}</strong>
+                {meal.status === 'pending' && 
+                  <div className={styles.mealHeader}>
+                    <span className={styles.pendingIndicator} title="Nutrition info is being processed">⏳ {meal.description}</span>
                     <span className={styles.mealTime}>{meal.time}</span>
                   </div>
-                  <div className={styles.mealTotal}>{totalKcal.toLocaleString()} kcal</div>
-                </button>
+                }
+                {meal.status === 'completed' &&
+                  <button 
+                    className={styles.mealHeader}
+                    onClick={() => toggleMeal(key)}
+                    aria-expanded={isExpanded}
+                    aria-controls={`items-${key}`}
+                  >
+                    <div className={styles.mealMeta}>
+                      <span className={`${styles.chevron} ${isExpanded ? styles.chevronExpanded : ''}`}>▶</span>
+                      <strong className={styles.mealName}>{meal.description}</strong>
+                      <span className={styles.mealTime}>{meal.time}</span>
+                    </div>
+                    <div className={styles.mealTotal}>{totalKcal.toLocaleString()} kcal</div>
+                  </button>
+                }
 
                 <ul role="list" className={`${styles.mealItems} ${isExpanded ? styles.mealItemsExpanded : ''}`} id={`items-${key}`} aria-hidden={!isExpanded}>
                   {meal.items.map((it, i) => (

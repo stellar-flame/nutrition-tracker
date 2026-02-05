@@ -15,5 +15,6 @@ export interface Meal {
     date: string;         // YYYY-MM-DD
     time: string;         // HH:MM (24-hour format)
     serving_size: number; // number of servings
+    status: 'pending' |  'completed' 
 }
 
