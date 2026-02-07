@@ -1,16 +1,18 @@
 from sqlmodel import SQLModel
 from datetime import date
-from typing import List, Optional
+from typing import List
 from enum import StrEnum, auto
 
 
 class MealStatus(StrEnum):
     PENDING = auto()
-    COMPLETED = auto()
+    COMPLETE= auto()
+    FAILED = auto()
 
 class MealBase(SQLModel):
     date: date
     time: str
+    created_at: str
     description: str
     serving_size: float = 1.0
     status: MealStatus = MealStatus.PENDING
@@ -36,7 +38,8 @@ class MealRead(MealBase):
 
 class MealCreateMinimal(SQLModel):
     description: str
-    date: Optional[str] = None  # default to today if missing
+    date: date
+    time: str
 
 class NutritionSummary(SQLModel):
     date: str            # YYYY-MM-DD

@@ -8,7 +8,7 @@ from sqlmodel import Session
 
 router = APIRouter(prefix="/health", tags=["health"])
 
-@router.get("/")
+@router.get("")
 async def root():
     return {"message": "Hello World"}
 

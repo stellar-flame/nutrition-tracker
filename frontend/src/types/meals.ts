@@ -14,7 +14,8 @@ export interface Meal {
     items: MealItem[]; // array of meal items
     date: string;         // YYYY-MM-DD
     time: string;         // HH:MM (24-hour format)
+    created_at: string;    // ISO timestamp of meal creation
     serving_size: number; // number of servings
-    status: 'pending' |  'completed' 
+    status: 'pending' |  'complete' | 'failed'; // status of the meal
 }
 

@@ -5,7 +5,7 @@ from datetime import date
 from app.models.schemas import MealStatus
 
 def get_meals_by_date(db: Session, day: str | date) -> list[Meal]:
-    stmt = select(Meal).where(Meal.date == day).order_by(desc(Meal.time))
+    stmt = select(Meal).where(Meal.date == day).order_by(desc(Meal.created_at))
     return db.exec(stmt).all()
 
 # meal_repo.py
@@ -16,7 +16,7 @@ def create_meal(db: Session, meal: Meal) -> Meal:
     return meal
 
 
-def attach_meal_items(db: Session, meal_id: int, items: list[dict]) -> None:
+def attach_meal_items(db: Session, meal_id: int, items: list[dict]) -> Meal:
     meal = db.get(Meal, meal_id)
     if not meal:
         raise ValueError(f"Meal with id {meal_id} not found")
@@ -35,5 +35,17 @@ def attach_meal_items(db: Session, meal_id: int, items: list[dict]) -> None:
         )
         db.add(item)
 
-    meal.status = MealStatus.COMPLETED
+    meal.status = MealStatus.COMPLETE
     db.commit()
+    return meal
+
+
+def update_meal_status(db: Session, meal_id: int, status: MealStatus) -> Meal:
+    meal = db.get(Meal, meal_id)
+    if not meal:
+        raise ValueError(f"Meal with id {meal_id} not found")
+    
+    meal.status = status
+    db.commit()
+    return meal
+

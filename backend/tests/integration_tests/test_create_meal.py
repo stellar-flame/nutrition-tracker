@@ -34,10 +34,10 @@ class TestFullMealFlow:
             meals = response.json()
             meal = next((m for m in meals if m["id"] == meal_id), None)
             
-            if meal and meal["status"] == "completed":
+            if meal and meal["status"] == "complete":
                 break
         
-        assert meal["status"] == "completed", f"Meal stuck in {meal['status']}"
+        assert meal["status"] == "complete", f"Meal stuck in {meal['status']}"
 
         # 3. Verify nutrition data exists
         assert len(meal["items"]) > 0

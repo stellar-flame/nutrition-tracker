@@ -102,7 +102,14 @@ export default function Meals() {
                     <span className={styles.mealTime}>{meal.time}</span>
                   </div>
                 }
-                {meal.status === 'completed' &&
+                {meal.status === 'failed' &&
+                  <div className={styles.mealHeader}>
+                    <span className={styles.failedIndicator} title="Failed to analyze nutrition">❌ {meal.description}</span>
+                    <span className={styles.failedMessage}>Failed to analyze nutrition</span>
+                    <span className={styles.mealTime}>{meal.time}</span>
+                  </div>
+                }
+                {meal.status === 'complete' &&
                   <button 
                     className={styles.mealHeader}
                     onClick={() => toggleMeal(key)}

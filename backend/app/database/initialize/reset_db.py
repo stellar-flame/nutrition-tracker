@@ -22,6 +22,18 @@ def reset_db():
         for table in tables:
             conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
         
+         # Drop all custom ENUM types
+        result = conn.execute(text("""
+            SELECT t.typname
+            FROM pg_type t
+            JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+            WHERE t.typtype = 'e' AND n.nspname = 'public'
+        """))
+        types = [row[0] for row in result]
+        
+        for enum_type in types:
+            conn.execute(text(f"DROP TYPE IF EXISTS {enum_type} CASCADE"))
+        
         conn.commit()
     
     print(f"Dropped {len(tables)} tables: {tables}")

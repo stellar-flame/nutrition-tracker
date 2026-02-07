@@ -12,7 +12,7 @@ def sample_meal(session):
         time="10:30",
         description="Apple and Peanut Butter",
         serving_size=1.0,
-        status="completed",
+        status="complete",  # ← Start as pending to test the flow
         items=[  # ← Also check: is it "items" or "meal_items" in your model?
             MealItem(
                 description="Apple",

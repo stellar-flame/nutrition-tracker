@@ -34,7 +34,6 @@ docker exec -it <container-d> /bin/bash #to exec inside the container
 ### 3. On CFN initiated update Stack
 
 
-
 #### Other issues:
 I wanted to upgrade my db tables because I made changes to the schema. I had previously run my dev_initialize_db scipt but this INCORRECTLY create the alembic version files in the container running in AWS. This will cause the alembic version table to be out of sync if I try and run a schema version file I created and packaged in the container loacally.
 

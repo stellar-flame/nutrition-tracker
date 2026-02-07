@@ -1,6 +1,6 @@
 import asyncio
 from typing import Annotated
-import datetime
+from datetime import datetime, timezone
 from sqlmodel import Session
 from app.ports.nutrition_provider import NutritionProvider
 from app.repositories import meal_repo
@@ -10,7 +10,6 @@ from app.models.schemas import MealStatus
 from fastapi import APIRouter, Depends, Query
 from app.database.database import get_session
 from app.models.schemas import NutritionSummary
-from datetime import date
 from app.api.dependencies import get_nutrition_provider
 
 router = APIRouter(prefix="/nutrition", tags=["nutrition"])    
@@ -40,12 +39,14 @@ def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", descrip
 
 @router.post("/meals", response_model=MealRead, status_code=201)
 async def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session), nutrition_provider: NutritionProvider = Depends(get_nutrition_provider)):
-    meal_date = payload.date or date.today()
-    meal_time = datetime.datetime.now().strftime("%H:%M:%S") # AI-derived nutrition (replaces hardcoded values)
+    meal_date = payload.date 
+    meal_time = payload.time
+    created_at = datetime.now(timezone.utc).isoformat()
     
     meal = Meal(
         date=meal_date,
         time=meal_time,
+        created_at=created_at,
         description=payload.description,
         items=[],
         status=MealStatus.PENDING

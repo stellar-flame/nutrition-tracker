@@ -269,3 +269,15 @@
   to { transform: rotate(360deg); }
 }
 
+.failedIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.failedMessage {
+  color: var(--color-muted, #666);
+  font-size: 13px;
+}

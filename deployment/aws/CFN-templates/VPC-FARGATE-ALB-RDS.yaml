@@ -50,8 +50,9 @@ Parameters:
 
   ImageTag:
     Type: String
-    Default: dev-20260126-150546
+    Default: dev-20260206-190330
     Description: Docker
+  
 
 Resources:
   NutritionVpc:
@@ -187,7 +188,22 @@ Resources:
               Action:
                 - ssm:GetParameters
                 - ssm:GetParameter
+              Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/DATABASE_URL"
+            - Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
               Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/OPENAI_API_KEY"
+            - Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+              Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/INTERNAL_TOKEN"
+            - Effect: Allow
+              Action:
+                - ssm:GetParameters
+                - ssm:GetParameter
+              Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/INTERNAL_API_URL"
             - Effect: Allow
               Action:
                 - kms:Decrypt
@@ -263,11 +279,6 @@ Resources:
           Image: !Sub "havz/nutrition-tracker-api:${ImageTag}"
           PortMappings:
             - ContainerPort: 8000
-          Environment:
-            - Name: DATABASE_URL
-              Value: !Sub
-                - "postgresql+psycopg2://${DBUsername}:${DBPassword}@${Host}:5432/${DBName}"
-                - Host: !GetAtt RDSInstance.Endpoint.Address
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -277,7 +288,12 @@ Resources:
           Secrets:
             - Name: OPENAI_API_KEY
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/OPENAI_API_KEY"
-
+            - Name: INTERNAL_TOKEN
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/INTERNAL_TOKEN"
+            - Name: INTERNAL_API_URL
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/INTERNAL_API_URL"
+            - Name: DATABASE_URL
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/DATABASE_URL" 
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:

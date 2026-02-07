@@ -44,7 +44,7 @@ def test_update_nutrition_result_updates_meal_and_items(client, sample_meal):
     # Verify meal status updated
     meal_resp = client.get("/nutrition/meals", params={"date": "2024-07-01"})
     meal_data = meal_resp.json()[0]
-    assert meal_data["status"] == "completed"
+    assert meal_data["status"] == "complete"
     # Verify meal item updated
     assert len(meal_data["items"]) == 1
     item = meal_data["items"][0]
