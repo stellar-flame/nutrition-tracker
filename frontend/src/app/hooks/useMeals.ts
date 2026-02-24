@@ -31,7 +31,9 @@ export function useMeals(date: string = getToday()) {
       return meals.map((meal) => {
         if (meal.status !== 'pending') return meal;
         const createdAt = new Date(meal.created_at).getTime();
-        if (now - createdAt > 120_000) {
+        console.log(`Checking meal ${meal.created_at} with status ${meal.status}`);
+        console.log(`Current time: ${Date.now()}, Created at: ${meal.created_at}, Age: ${(now - createdAt) / 1000}s`);
+        if (now - createdAt > 60_000) {
           return { ...meal, status: 'failed' as const }; // New object, not mutation
         }
         return meal;
@@ -43,9 +45,8 @@ export function useMeals(date: string = getToday()) {
       const now = Date.now();
       const hasActivePending = meals?.some((meal) => {
         if (meal.status !== 'pending') return false;
-        console.log(`Checking meal ${meal.created_at} with status ${meal.status}`);
         const createdAt = new Date(meal.created_at).getTime();
-        return now - createdAt <= 120_000;
+        return now - createdAt <= 60_000;
       });
       return hasActivePending ? 3000 : false;
     },

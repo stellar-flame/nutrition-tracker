@@ -12,6 +12,7 @@ def sample_meal(session):
         description="Apple and Peanut Butter",
         serving_size=1.0,
         status="pending",
+        created_at=datetime.datetime.now(datetime.timezone.utc),  # ← Add this line
     )
     session.add(meal)
     session.commit()
@@ -55,4 +56,4 @@ def test_update_nutrition_result_updates_meal_and_items(client, sample_meal):
     assert item["fatG"] == 0.3
     assert item["fiberG"] == 3.1
     assert item["sugarG"] == 14
-    assert item["sodiumMg"] == 1    
+    assert item["sodiumMg"] == 1 

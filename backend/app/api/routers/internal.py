@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 from app.api.dependencies import verify_internal_token
 from app.database.database import get_session
-from app.models.schemas import MealStatus
+from app.models.nutrition_schemas import MealStatus
 from app.repositories import meal_repo
 import logging
 

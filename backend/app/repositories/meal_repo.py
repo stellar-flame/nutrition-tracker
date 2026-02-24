@@ -2,7 +2,7 @@ from sqlmodel import Session, desc, select
 from app.models.db_models import Meal, MealItem
 from datetime import date
 
-from app.models.schemas import MealStatus
+from app.models.nutrition_schemas import MealStatus
 
 def get_meals_by_date(db: Session, day: str | date) -> list[Meal]:
     stmt = select(Meal).where(Meal.date == day).order_by(desc(Meal.created_at))

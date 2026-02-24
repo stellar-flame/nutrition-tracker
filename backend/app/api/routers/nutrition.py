@@ -2,15 +2,15 @@ import asyncio
 from typing import Annotated
 from datetime import datetime, timezone
 from sqlmodel import Session
-from app.ports.nutrition_provider import NutritionProvider
+from app.ports.job_queue import JobQueue
 from app.repositories import meal_repo
-from app.models.schemas import MealRead, MealCreateMinimal
+from app.models.nutrition_schemas import MealRead, MealCreateMinimal
 from app.models.db_models import  Meal
-from app.models.schemas import MealStatus
+from app.models.nutrition_schemas import MealStatus
 from fastapi import APIRouter, Depends, Query
 from app.database.database import get_session
-from app.models.schemas import NutritionSummary
-from app.api.dependencies import get_nutrition_provider
+from app.models.nutrition_schemas import NutritionSummary
+from app.api.dependencies import  get_queue
 
 router = APIRouter(prefix="/nutrition", tags=["nutrition"])    
 
@@ -38,7 +38,7 @@ def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", descrip
     return reads
 
 @router.post("/meals", response_model=MealRead, status_code=201)
-async def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session), nutrition_provider: NutritionProvider = Depends(get_nutrition_provider)):
+async def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session), job: JobQueue = Depends(get_queue)):
     meal_date = payload.date 
     meal_time = payload.time
     created_at = datetime.now(timezone.utc).isoformat()
@@ -53,7 +53,10 @@ async def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends
     )
     saved = meal_repo.create_meal(db, meal)
     
-    asyncio.create_task(
-        nutrition_provider.run_nutrition_lookup(payload.description, meal_id=saved.id)
-    )
+    prompt = {
+        "meal_description": payload.description,
+        "meal_id": saved.id
+    }
+    await job.enqueue(prompt=prompt)
+    
     return MealRead.model_validate(saved)

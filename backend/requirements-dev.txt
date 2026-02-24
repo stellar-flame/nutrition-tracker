@@ -1,0 +1,9 @@
+-r requirements.txt
+
+# Development and testing dependencies (unpinned)
+pytest
+httpx
+openai
+boto3
+pytest-localstack
+setuptools

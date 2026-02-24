@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlmodel import Field, Relationship
-from app.models.schemas import MealItemBase, MealBase
+from app.models.nutrition_schemas import MealItemBase, MealBase
 
 class MealItem(MealItemBase, table=True):
     __tablename__ = "meal_items"
