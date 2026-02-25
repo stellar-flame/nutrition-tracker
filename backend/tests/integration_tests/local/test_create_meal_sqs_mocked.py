@@ -1,49 +1,22 @@
 import subprocess
+import threading
 import time
 import pytest
 import httpx
-import os
-import boto3
+
+from dev_tools.sqs_lambda_polling import SQSQueuePoller
 
 #Start LocalStack SQS with SQS_QUEUE_URL for testing
 #   docker run -d -p 4566:4566 -p 4571:4571 --name localstack localstack/localstack
 
 
 BASE_URL = "http://localhost:8000"  # Assuming FastAPI is running here
-QUEUE_NAME = "meal-processing-queue"
-SQS_QUEUE_URL = f"http://localhost:4566/000000000000/{QUEUE_NAME}"  # LocalStack SQS URL
-SQS_ENDPOINT_URL = "http://localhost:4566"  # LocalStack endpoint
-
-
-@pytest.fixture(scope="session")
-def sqs_client():
-    return boto3.client(
-        "sqs",
-        region_name="us-east-1",
-        endpoint_url=SQS_ENDPOINT_URL,  
-        aws_access_key_id="test",
-        aws_secret_access_key="test"
-    )
-
-@pytest.fixture(scope="session")
-def sqs_queue(sqs_client):
-    queue_name = QUEUE_NAME
-    response = sqs_client.create_queue(QueueName=queue_name)
-    queue_url = response["QueueUrl"]
-    yield queue_url
-    # Cleanup: delete the queue after the test
-    sqs_client.delete_queue(QueueUrl=queue_url)
-
 
 @pytest.fixture(scope="session", autouse=True)
-def start_poller(sqs_queue):
+def start_poller():
     # Start your polling script with output visible in terminal
-    env = os.environ.copy()
-    env["SQS_QUEUE_URL"] = sqs_queue
-    env["SQS_ENDPOINT_URL"] = SQS_ENDPOINT_URL
     proc = subprocess.Popen(
-        ["python", "tests/integration_tests/local/sqs_lambda_polling.py"],
-        env=env
+        ["python", "-m", "dev_tools.sqs_lambda_polling"],
     )
     time.sleep(2)  # Give poller time to start
     yield
@@ -54,12 +27,8 @@ def start_poller(sqs_queue):
 @pytest.fixture(scope="session", autouse=True)
 def start_uvicorn():
     # Start Uvicorn server with output visible in terminal and mocked SQS_QUEUE_URL
-    env = os.environ.copy()
-    env["SQS_QUEUE_URL"] = SQS_QUEUE_URL
-    env["SQS_ENDPOINT_URL"] = SQS_ENDPOINT_URL
     proc = subprocess.Popen(
         ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"],
-        env=env
     )
     time.sleep(2)  # Give server time to start
     yield

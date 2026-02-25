@@ -7,3 +7,4 @@ openai
 boto3
 pytest-localstack
 setuptools
+awscli-local

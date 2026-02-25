@@ -1,14 +1,14 @@
 import json
 import os
-from openai import  AsyncOpenAI
+from openai import  OpenAI
 import logging
 
 logger = logging.getLogger(__name__)
 
-async def ai_lookup(description: str, meal_id: int):
-    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=60.0)  # Long timeout for OpenAI calls
+def ai_lookup(description: str, meal_id: int):
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=60.0)  # Long timeout for OpenAI calls
     
-    response = await client.chat.completions.create(
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         response_format={"type": "json_object"},  # Guarantees valid JSON
         messages=[

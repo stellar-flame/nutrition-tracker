@@ -7,10 +7,11 @@ from app.repositories import meal_repo
 from app.models.nutrition_schemas import MealRead, MealCreateMinimal
 from app.models.db_models import  Meal
 from app.models.nutrition_schemas import MealStatus
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from app.database.database import get_session
 from app.models.nutrition_schemas import NutritionSummary
 from app.api.dependencies import  get_queue
+import logging
 
 router = APIRouter(prefix="/nutrition", tags=["nutrition"])    
 
@@ -38,7 +39,7 @@ def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", descrip
     return reads
 
 @router.post("/meals", response_model=MealRead, status_code=201)
-async def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session), job: JobQueue = Depends(get_queue)):
+def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session), job: JobQueue = Depends(get_queue)):
     meal_date = payload.date 
     meal_time = payload.time
     created_at = datetime.now(timezone.utc).isoformat()
@@ -57,6 +58,12 @@ async def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends
         "meal_description": payload.description,
         "meal_id": saved.id
     }
-    await job.enqueue(prompt=prompt)
-    
+    try:
+        job.enqueue(prompt=prompt)
+    except Exception as e:
+        logging.error(f"Failed to enqueue job for meal_id {saved.id}: {e}")
+        meal_repo.update_meal_status(db, saved.id, MealStatus.FAILED)
+        raise HTTPException(status_code=503, detail="Queue operation failed")
+       
     return MealRead.model_validate(saved)
+

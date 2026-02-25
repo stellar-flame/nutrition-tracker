@@ -23,7 +23,6 @@ export function useMeals(date: string = getToday()) {
   return useQuery<Meal[], AxiosError>({
     queryKey: ['meals', date],
     queryFn: () => fetchMeals(date),
-    staleTime: 60_000,
     
     // Transform data to mark stale pending as failed
     select: (meals) => {
@@ -33,7 +32,7 @@ export function useMeals(date: string = getToday()) {
         const createdAt = new Date(meal.created_at).getTime();
         console.log(`Checking meal ${meal.created_at} with status ${meal.status}`);
         console.log(`Current time: ${Date.now()}, Created at: ${meal.created_at}, Age: ${(now - createdAt) / 1000}s`);
-        if (now - createdAt > 60_000) {
+        if (now - createdAt > 10_000) {
           return { ...meal, status: 'failed' as const }; // New object, not mutation
         }
         return meal;
@@ -46,7 +45,7 @@ export function useMeals(date: string = getToday()) {
       const hasActivePending = meals?.some((meal) => {
         if (meal.status !== 'pending') return false;
         const createdAt = new Date(meal.created_at).getTime();
-        return now - createdAt <= 60_000;
+        return now - createdAt <= 10_000;
       });
       return hasActivePending ? 3000 : false;
     },

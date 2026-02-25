@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 import pytest
@@ -9,10 +10,12 @@ BASE_URL = "http://localhost:8000"  # Assuming FastAPI is running here
 @pytest.fixture(scope="session", autouse=True)
 def start_uvicorn():
     # Start Uvicorn server
+    env = os.environ.copy()
+    env["SQS_QUEUE_URL"] = ""
+    env["SQS_ENDPOINT_URL"] = ""
     proc = subprocess.Popen(
         ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        env=env 
     )
     time.sleep(2)  # Give server time to start
     yield

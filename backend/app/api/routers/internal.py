@@ -1,3 +1,5 @@
+from asyncio import sleep
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 from app.api.dependencies import verify_internal_token
@@ -15,14 +17,13 @@ def nutrition_result(payload: dict, db: Session = Depends(get_session),_: str = 
    
     meal_id = payload["meal_id"]
     items = payload["items"]
-
-    # update meal + update daily totals
+    
     updated = meal_repo.attach_meal_items(db, meal_id, items)
     if not updated:
         raise HTTPException(status_code=404, detail="Meal not found")
     
     logger.info(f"Updated meal {meal_id} with nutrition info.")
-
+    
     return {"status": "ok"}
 
 

@@ -5,11 +5,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-async def update_nutrition_info(meal_id: int, items: list[dict]):
+def update_nutrition_info(meal_id: int, items: list[dict]):
         # Add before the post call
         logger.info(f"Posting to {os.getenv('INTERNAL_API_URL')}/nutrition_result with token {os.getenv('INTERNAL_TOKEN')}")
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
+        with httpx.Client(timeout=60.0) as client:
+            response = client.post(
                 os.getenv("INTERNAL_API_URL") + "/nutrition_result",
                 headers={"X-Internal-Token": os.getenv("INTERNAL_TOKEN")},
                 json={
@@ -22,10 +22,10 @@ async def update_nutrition_info(meal_id: int, items: list[dict]):
             
         
        
-async def mark_as_failed(meal_id: int, error_message: str):
+def mark_as_failed(meal_id: int, error_message: str):
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
+        with httpx.Client(timeout=30.0) as client:
+            response = client.post(
                 os.getenv("INTERNAL_API_URL") + "/nutrition_failed",
                 headers={"X-Internal-Token": os.getenv("INTERNAL_TOKEN")},
                 json={
