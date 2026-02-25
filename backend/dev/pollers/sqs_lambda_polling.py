@@ -34,7 +34,6 @@ class SQSQueuePoller:
 
     def poll(self):
         while True:
-            print(f"Polling SQS at {self.queue_url} with endpoint {self.endpoint_url}...")
             try:
                 resp = self.sqs.receive_message(
                     QueueUrl=self.queue_url,
