@@ -28,13 +28,6 @@ services:
         - ./.env
       environment:
         - PYTHONPATH=/backend
-        - SQS_QUEUE_NAME=meal_processing_queue
-        - SQS_QUEUE_URL=http://localstack:4566/000000000000/meal_processing_queue # LocalStack SQS URL
-        - SQS_ENDPOINT_URL=http://localstack:4566  # LocalStack endpoint
-        - AWS_DEFAULT_REGION=us-east-1
-        - AWS_ACCESS_KEY_ID=test
-        - AWS_SECRET_ACCESS_KEY=test
-        - AWS_SESSION_TOKEN=test
       volumes:
         # Mount the whole backend so code changes are instant
         - ./:/backend
@@ -48,16 +41,9 @@ services:
       context: .
       dockerfile: ./dev/docker/Dockerfile.dev
     env_file:
-      - ./.env
+      - ./lambdas/.env
     environment:
       - PYTHONPATH=/backend
-      - SQS_QUEUE_NAME=meal_processing_queue
-      - SQS_QUEUE_URL=http://localstack:4566/000000000000/meal_processing_queue # LocalStack SQS URL
-      - SQS_ENDPOINT_URL=http://localstack:4566  # LocalStack endpoint
-      - AWS_DEFAULT_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - AWS_SESSION_TOKEN=test
     volumes:
       - ./:/backend
     working_dir: /backend
@@ -65,8 +51,6 @@ services:
     depends_on:
       localstack:
         condition: service_healthy
-      api:
-        condition: service_started
-
+    
 volumes:
   localstack-data:

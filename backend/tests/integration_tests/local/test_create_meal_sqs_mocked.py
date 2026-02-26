@@ -1,39 +1,11 @@
-import subprocess
-import threading
 import time
 import pytest
 import httpx
 
-from dev_tools.sqs_lambda_polling import SQSQueuePoller
-
-#Start LocalStack SQS with SQS_QUEUE_URL for testing
-#   docker run -d -p 4566:4566 -p 4571:4571 --name localstack localstack/localstack
-
+# Start services
+#   docker compose up --build
 
 BASE_URL = "http://localhost:8000"  # Assuming FastAPI is running here
-
-@pytest.fixture(scope="session", autouse=True)
-def start_poller():
-    # Start your polling script with output visible in terminal
-    proc = subprocess.Popen(
-        ["python", "-m", "dev_tools.sqs_lambda_polling"],
-    )
-    time.sleep(2)  # Give poller time to start
-    yield
-    proc.terminate()
-    proc.wait()
-
-
-@pytest.fixture(scope="session", autouse=True)
-def start_uvicorn():
-    # Start Uvicorn server with output visible in terminal and mocked SQS_QUEUE_URL
-    proc = subprocess.Popen(
-        ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"],
-    )
-    time.sleep(2)  # Give server time to start
-    yield
-    proc.terminate()
-    proc.wait()
 
 
 @pytest.fixture

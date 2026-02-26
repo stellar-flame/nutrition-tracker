@@ -31,8 +31,10 @@ class SQSQueuePoller:
         )
 
         self.sqs.create_queue(QueueName=queue_name)
+        
 
     def poll(self):
+        logging.info(f"Starting SQS poller for queue: {queue_name} at {self.queue_url} with endpoint {self.endpoint_url}")
         while True:
             try:
                 resp = self.sqs.receive_message(
