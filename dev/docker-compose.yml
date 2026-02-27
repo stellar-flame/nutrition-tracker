@@ -1,0 +1,56 @@
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"   # LocalStack edge port
+    environment:
+      - SERVICES=sqs
+      - DEBUG=0
+      - LS_LOG=warn
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./init-queue.sh:/etc/localstack/init/ready.d/init-queue.sh:ro
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "curl -s http://localstack:4566/_localstack/health | grep -q '\"sqs\": \"running\"'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  api:
+      build:
+          context: ..
+          dockerfile: dev/Dockerfile.api
+      ports:
+        - "8000:8000"
+      env_file:
+        - ../backend/.env
+      environment:
+        - PYTHONPATH=/backend
+      volumes:
+        # Mount the whole backend so code changes are instant
+        - ../backend:/backend
+      working_dir: /backend
+      command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      depends_on:
+        - localstack
+
+  poller:
+    build:
+      context: ..
+      dockerfile: dev/Dockerfile.lambda
+    env_file:
+      - ../ai_lookup/.env
+    environment:
+      - PYTHONPATH=/ai_lookup
+    volumes:
+      - ../ai_lookup:/ai_lookup
+    working_dir: /ai_lookup
+    command: python -m SQS_poller
+    depends_on:
+      - localstack
+
+    
+volumes:
+  localstack-data:

@@ -1,0 +1,13 @@
+# Python byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment variables and local overrides (keep an example file in git)
+.env
+.env.*
+!.env.example

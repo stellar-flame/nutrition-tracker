@@ -2,25 +2,11 @@
 
 Use docker to create zip to upload function
 
-* lambda code in lambdas folder
-* common code between app and lambda in common. Can probably move this into lambda now that local environ uses localstack
+* lambda code in ai_lookup folder
 
 
 ```
-docker run --rm --platform linux/amd64 \
-  --entrypoint /bin/bash \
-  -v "$PWD":/var/task \
-  -w /var/task/lambdas/nutrition_ai \
-  public.ecr.aws/lambda/python:3.12 \
-  -lc "
-    rm -rf .build lambda.zip &&
-    mkdir -p .build &&
-    pip install -r requirements.txt -t .build &&
-    cp lambda_function.py .build/ &&
-    mkdir -p .build/common &&
-    cp -r ../../common/* .build/common/ &&
-    cd .build &&
-    python -m zipfile -c ../lambda.zip .
+docker buildx build --platform linux/amd64 -o . .
   "
 ```
 
@@ -43,6 +29,11 @@ INTERNAL_TOKEN
 INTERNAL_API_URL
 
 ## Create Standard SQS queue
+
+Queue policy setup:
+Task Role on TaskDefinition needs permission to send msg to queue
+Lambda Role needs permission to read from queue
+
 
 Test with:
 
@@ -67,7 +58,7 @@ docker push havz/nutrition-tracker-api:$TAG
 #Start LocalStack and SQS Poller for the Lambda
 docker-compose up poller localstack
 
-docker run --rm -p 8000:8000 --env-file .env-staging havz/nutrition-tracker-api:$TAG
+docker run --rm -p 8000:8000 --env-file .env havz/nutrition-tracker-api:$TAG
 
 
 #to exec inside the container

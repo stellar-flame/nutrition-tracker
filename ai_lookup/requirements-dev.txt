@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# Development and testing dependencies (unpinned)
+httpx
+boto3
+python-dotenv

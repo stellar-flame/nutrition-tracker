@@ -1,2 +1,5 @@
 .DS_Store
-backend/.env-staging
+ai_lookup/__pycache__/
+ai_lookup/.pytest_cache/
+ai_lookup/lambda.zip
+ai_lookup/.env
