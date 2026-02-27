@@ -51,6 +51,5 @@ services:
     depends_on:
       - localstack
 
-    
 volumes:
   localstack-data:

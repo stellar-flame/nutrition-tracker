@@ -1,0 +1,13 @@
+flowchart LR
+    FE[Frontend<br/>React Web App]
+    API[FastAPI Backend]
+    Q[Amazon Simple Queue Service<br/>SQS Queue]
+    L[AWS Lambda<br/>AI Nutrition Estimate Function]
+    DB[(PostgreSQL Database)]
+
+    FE -->|HTTP Request| API
+    API -->|AI Estimate Nutrition Enqueue Job| Q
+    Q -->|Trigger Event| L
+    L -->|Send Results| API
+    API -->|Store / Update Data| DB
+    API -->|HTTP Response| FE

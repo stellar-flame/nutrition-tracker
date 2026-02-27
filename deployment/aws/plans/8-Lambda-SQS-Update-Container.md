@@ -7,7 +7,7 @@ Use docker to create zip to upload function
 
 ```
 docker buildx build --platform linux/amd64 -o . .
-  "
+  
 ```
 
 Test Lambda with: 

@@ -1,7 +1,7 @@
 
 # Nutrition Tracker
 
-A full-stack nutrition tracking application with AI-powered meal analysis. Log meals by entering a text description and get automatic nutritional breakdowns powered by OpenAI.
+A full-stack nutrition tracking application with Artificial Intelligence (AI)-powered meal analysis. Log meals by entering a text description and get automatic nutritional breakdowns powered by OpenAI.
 
 ## Features
 
@@ -24,75 +24,37 @@ A full-stack nutrition tracking application with AI-powered meal analysis. Log m
 - PostgreSQL
 - OpenAI GPT-4o-mini
 - Alembic (migrations)
-### Backend Setup
+- Amazon SQS (Simple Queue Service) for asynchronous nutrition estimation jobs
+- AWS Lambda for AI-based nutrition estimation
+  
+### Design
 
-```bash
-cd backend
+```mermaid
+flowchart LR
+    FE[Frontend<br/>React Web App]
+    API[FastAPI Backend]
+    DB[(PostgreSQL Database)]
+    Q[Amazon SQS<br/>Nutrition Jobs Queue]
+    L[AWS Lambda<br/>AI Nutrition Estimate Function]
 
-# Install dependencies
-pip install -r requirements.txt
+    FE -->|Read Meals| API
+    API -->|Query Data| DB
 
-# Set environment variables
-export DATABASE_URL=postgresql+psycopg2://user:pass@localhost:5432/nutrition
-export OPENAI_API_KEY=your-openai-api-key
-
-# Run database migrations
-alembic upgrade head
-
-# Start the server
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+    FE -->|Create Meal| API
+    API -->|Store Pending Meal| DB
+    API -->|Enqueue Nutrition Job| Q
+    Q -->|Trigger Event| L
+    L -->|Send Nutrition Results| API
+    API -->|Update Meal Data| DB
 ```
 
-### Frontend Setup
+### Deployment
 
-```bash
-cd frontend
+I am currently studying for the AWS Certified Solutions Architect – Associate (SAA-C03) certification.
 
-# Install dependencies
-npm install
+I am using this project as a hands-on way to learn core Amazon Web Services (AWS) concepts and services, including backend APIs, asynchronous processing, and cloud deployment patterns.
 
-# Start dev server (proxies /api to localhost:8000)
-npm run dev
-```
+I am following Adrian Cantrill’s online course as part of that learning journey:
 
-The app will be available at `http://localhost:5173`.
-
-## Environment Variables
-
-### Backend
-
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `OPENAI_API_KEY` | OpenAI API key for nutrition estimation |
-
-### Frontend
-
-The Vite dev server proxies `/api` requests to `http://localhost:8000`.
-
-## API Endpoints
-
-### Nutrition
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/nutrition/summary?date=YYYY-MM-DD` | Daily nutrition summary |
-| `GET` | `/nutrition/meals?date=YYYY-MM-DD` | List meals for a date |
-| `POST` | `/nutrition/meals` | Create a meal (AI estimates nutrition) |
-
-### Health
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health/` | Basic health check |
-| `GET` | `/health/db` | Database connectivity check |
-
-
-## Deployment
-
-I am currently studying for **AWS Certified Solutions Architect - Associate (SAA-C03)**
-I am doing the folowing online course: https://learn.cantrill.io/p/aws-certified-solutions-architect-associate-saa-c03
-
-I have been practicing the various deployments. In deployments folder I have documented what I have learnt and the various deployments I have done.
-
+AWS Certified Solutions Architect – Associate (SAA-C03)
 
