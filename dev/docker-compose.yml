@@ -41,12 +41,12 @@ services:
       context: ..
       dockerfile: dev/Dockerfile.lambda
     env_file:
-      - ../ai_lookup/.env
+      - ../ai_worker/.env
     environment:
-      - PYTHONPATH=/ai_lookup
+      - PYTHONPATH=/ai_worker
     volumes:
-      - ../ai_lookup:/ai_lookup
-    working_dir: /ai_lookup
+      - ../ai_worker:/ai_worker
+    working_dir: /ai_worker
     command: python -m SQS_poller
     depends_on:
       - localstack

@@ -87,3 +87,34 @@ main {
   max-width: 1200px;  /* Adjust this value: 1000px, 1200px, 1400px, etc. */
   min-width: 600px;  /* Ensure minimum width for layout stability */
 }
+
+/* Responsive adjustments for tablets and phones */
+@media (max-width: 900px) {
+  body {
+    font-size: 16px;
+    margin: 0 10px;
+  }
+  main {
+    min-width: 0;
+    max-width: 100%;
+    padding: 0 8px;
+  }
+  h1 {
+    font-size: 2.2em;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+    margin: 0 2px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  main {
+    padding: 0 2px;
+  }
+  h1 {
+    font-size: 1.5em;
+  }
+}

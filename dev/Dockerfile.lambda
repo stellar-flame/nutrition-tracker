@@ -4,7 +4,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-WORKDIR /ai_lookup
+WORKDIR /ai_worker
 
 # (Optional) system deps that commonly come up; keep minimal
 # RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -12,13 +12,13 @@ WORKDIR /ai_lookup
 #   && rm -rf /var/lib/apt/lists/*
 
 # Copy only dependency files first so Docker can cache pip install
-COPY ai_lookup/requirements.txt ai_lookup/requirements-dev.txt ./
+COPY ai_worker/requirements.txt ai_worker/requirements-dev.txt ./
 
 # Upgrade pip tooling and install deps
 RUN python -m pip install --upgrade pip setuptools wheel \
  && pip install --no-cache-dir -r requirements-dev.txt
 
 # IMPORTANT: don't COPY the rest of your code in dev.
-# docker-compose bind-mounts your source into /ai_lookup, so changes are instant.
+# docker-compose bind-mounts your source into /ai_worker, so changes are instant.
 
 # No CMD here; docker-compose provides the command for api/poller

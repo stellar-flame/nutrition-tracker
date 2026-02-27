@@ -2,7 +2,7 @@
 
 Use docker to create zip to upload function
 
-* lambda code in ai_lookup folder
+* lambda code in ai_worker folder
 
 
 ```
