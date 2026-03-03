@@ -1,8 +1,13 @@
-deploy app container
-reset db
-move common code into lambda
-run tests
-deploy lambda - create docker file
+
+Next:
+
+Use Lambda Layer for libs
+Add Users and Auth
+    - User -> * Meals
+    - Auth
+    - Login screens
+    - Amazon Cognito
+CloudFront
 
 
 
