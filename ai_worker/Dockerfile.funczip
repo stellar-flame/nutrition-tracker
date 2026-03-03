@@ -1,0 +1,7 @@
+FROM public.ecr.aws/sam/build-python3.12 AS build
+WORKDIR /work
+COPY lambda_function.py /work/
+COPY jobs/ /work/jobs/
+RUN cd /work && zip -r /lambda.zip .
+FROM scratch
+COPY --from=build /lambda.zip /lambda.zip

@@ -2,12 +2,12 @@
 Next:
 
 Use Lambda Layer for libs
+CloudFront and HTTPS
 Add Users and Auth
     - User -> * Meals
     - Auth
     - Login screens
     - Amazon Cognito
-CloudFront
 
 
 

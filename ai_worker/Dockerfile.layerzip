@@ -1,0 +1,9 @@
+FROM public.ecr.aws/sam/build-python3.12 AS build
+WORKDIR /var/task
+COPY requirements.txt .
+RUN mkdir -p layer/python \
+ && python -m pip install -U pip \
+ && python -m pip install --only-binary=:all: -r requirements.txt -t layer/python \
+ && cd layer && zip -r /layer.zip python
+FROM scratch
+COPY --from=build /layer.zip /lambda-layer.zip
