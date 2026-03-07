@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 origins = [
-    "http://nutritionapptracker.com",
+    "https://www.nutritionapptracker.com",
     "http://localhost:5173",
     # add https://your-cloudfront-domain.com later if you use CloudFront
 ]

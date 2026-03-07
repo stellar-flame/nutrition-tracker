@@ -31,21 +31,20 @@ A full-stack nutrition tracking application with Artificial Intelligence (AI)-po
 
 ```mermaid
 flowchart LR
-    FE[Frontend<br/>React Web App]
+    FE[Frontend<br/>React Web App via CloudFront]
     API[FastAPI Backend]
-    DB[(PostgreSQL Database)]
-    Q[Amazon SQS<br/>Nutrition Jobs Queue]
+    Q[Amazon Simple Queue Service<br/>SQS Queue]
     L[AWS Lambda<br/>AI Nutrition Estimate Function]
+    DB[(PostgreSQL Database)]
 
-    FE -->|Read Meals| API
-    API -->|Query Data| DB
-
-    FE -->|Create Meal| API
-    API -->|Store Pending Meal| DB
-    API -->|Enqueue Nutrition Job| Q
+    FE -->|HTTPS Request| API
+    API -->|Create meal / enqueue estimate job| Q
+    API -->|Return pending response| FE
     Q -->|Trigger Event| L
-    L -->|Send Nutrition Results| API
-    API -->|Update Meal Data| DB
+    L -->|POST nutrition result| API
+    API -->|Store / update data| DB
+    FE -->|Poll / refresh meal status| API
+    API -->|Completed result| FE
 ```
 
 ### Deployment
