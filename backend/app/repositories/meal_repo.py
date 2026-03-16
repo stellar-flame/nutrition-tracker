@@ -4,8 +4,10 @@ from datetime import date
 
 from app.models.nutrition_schemas import MealStatus
 
-def get_meals_by_date(db: Session, day: str | date) -> list[Meal]:
-    stmt = select(Meal).where(Meal.date == day).order_by(desc(Meal.created_at))
+def get_meals_by_date(db: Session, day: str | date, user_id: int | None = None) -> list[Meal]: 
+    stmt = select(Meal).where(Meal.date == day)
+    stmt = stmt.where(Meal.user_id == user_id)
+    stmt = stmt.order_by(desc(Meal.created_at))
     return db.exec(stmt).all()
 
 # meal_repo.py

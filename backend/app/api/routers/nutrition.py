@@ -34,7 +34,7 @@ def get_nutrition_summary(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2
 
 @router.get("/meals", response_model=list[MealRead])
 def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")], db: Session = Depends(get_session)):
-    meals = meal_repo.get_meals_by_date(db, date)
+    meals = meal_repo.get_meals_by_date(db, date, user_id=1)
     reads = [MealRead.model_validate(meal) for meal in meals] 
     return reads
 
@@ -50,7 +50,8 @@ def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_s
         created_at=created_at,
         description=payload.description,
         items=[],
-        status=MealStatus.PENDING
+        status=MealStatus.PENDING,
+        user_id=1
     )
     saved = meal_repo.create_meal(db, meal)
     

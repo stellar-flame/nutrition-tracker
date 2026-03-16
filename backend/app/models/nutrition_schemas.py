@@ -4,6 +4,23 @@ from typing import List
 from enum import StrEnum, auto
 
 
+class Gender(StrEnum):
+    FEMALE = "female",
+    MALE = "male",
+    OTHER = "other" 
+    
+class UserBase(SQLModel):
+    first_name: str
+    last_name: str
+    height_in: float
+    weight_lb: float
+    date_of_birth: date
+    gender: str
+
+class UserRead(UserBase):
+    id: int
+
+
 class MealStatus(StrEnum):
     PENDING = auto()
     COMPLETE= auto()
@@ -16,6 +33,7 @@ class MealBase(SQLModel):
     description: str
     serving_size: float = 1.0
     status: MealStatus = MealStatus.PENDING
+    user_id: int
 
 class MealItemBase(SQLModel):
     description: str
