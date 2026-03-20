@@ -10,14 +10,14 @@ from app.models.nutrition_schemas import MealStatus
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.database.database import get_session
 from app.models.nutrition_schemas import NutritionSummary
-from app.api.dependencies import  get_queue
+from app.api.dependencies import  get_current_user, get_queue
 import logging
 
 router = APIRouter(prefix="/nutrition", tags=["nutrition"])    
 
 @router.get("/summary", response_model=NutritionSummary)
-def get_nutrition_summary(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")], db: Session = Depends(get_session)):
-    meals = meal_repo.get_meals_by_date(db, date)
+def get_nutrition_summary(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")], db: Session = Depends(get_session), user = Depends(get_current_user)):
+    meals = meal_repo.get_meals_by_date(db, date, user)
     mealreads = [MealRead.model_validate(meal) for meal in meals]
     meal_items = [item for meal in mealreads for item in meal.items]
     return NutritionSummary(
@@ -33,13 +33,13 @@ def get_nutrition_summary(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2
 
 
 @router.get("/meals", response_model=list[MealRead])
-def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")], db: Session = Depends(get_session)):
-    meals = meal_repo.get_meals_by_date(db, date, user_id=1)
+def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")], db: Session = Depends(get_session), user = Depends(get_current_user)):
+    meals = meal_repo.get_meals_by_date(db, date, user)
     reads = [MealRead.model_validate(meal) for meal in meals] 
     return reads
 
 @router.post("/meals", response_model=MealRead, status_code=201)
-def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session), job: JobQueue = Depends(get_queue)):
+def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session), job: JobQueue = Depends(get_queue), user = Depends(get_current_user)):
     meal_date = payload.date 
     meal_time = payload.time
     created_at = datetime.now(timezone.utc).isoformat()
@@ -51,7 +51,7 @@ def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_s
         description=payload.description,
         items=[],
         status=MealStatus.PENDING,
-        user_id=1
+        user_id=user.id
     )
     saved = meal_repo.create_meal(db, meal)
     

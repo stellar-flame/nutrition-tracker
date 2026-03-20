@@ -6,6 +6,7 @@ class User(UserBase, table=True):
     __tablename__ = "users"
     id: Optional[int] = Field(default=None, primary_key=True)
     meals: List["Meal"] = Relationship(back_populates="user")
+    cognito_sub: str = Field(default=None, unique=True)
 
 
 class MealItem(MealItemBase, table=True):

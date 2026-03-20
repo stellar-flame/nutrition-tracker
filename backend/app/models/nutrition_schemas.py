@@ -8,7 +8,7 @@ class Gender(StrEnum):
     FEMALE = "female",
     MALE = "male",
     OTHER = "other" 
-    
+
 class UserBase(SQLModel):
     first_name: str
     last_name: str
@@ -16,6 +16,7 @@ class UserBase(SQLModel):
     weight_lb: float
     date_of_birth: date
     gender: str
+    
 
 class UserRead(UserBase):
     id: int

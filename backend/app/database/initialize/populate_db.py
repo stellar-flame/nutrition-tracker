@@ -18,7 +18,8 @@ def create_user():
                     height_in=70.0,
                     weight_lb=150.0,
                     date_of_birth="1990-01-01",
-                    gender=Gender.FEMALE)
+                    gender=Gender.FEMALE,
+                    cognito_sub="default-user-sub")
         
         session.add(user)
         session.commit()

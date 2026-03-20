@@ -1,18 +1,32 @@
 import datetime
 import pytest
 
-from app.models.db_models import Meal
+from app.models.db_models import Meal, User
 
 @pytest.fixture
 def sample_meal(session):
     """A basic meal for tests that need one."""
+    user = User(
+        first_name="Test",
+        last_name="User",
+        height_in=70,
+        weight_lb=180,
+        date_of_birth=datetime.date(1990, 1, 1),
+        gender="other",
+        cognito_sub="default-user-sub",
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
     meal = Meal(
         date=datetime.date(2024, 7, 1),
         time="10:30",
         description="Apple and Peanut Butter",
         serving_size=1.0,
         status="pending",
-        created_at=datetime.datetime.now(datetime.timezone.utc),  # ← Add this line
+        created_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        user_id=user.id
     )
     session.add(meal)
     session.commit()

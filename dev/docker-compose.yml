@@ -28,6 +28,8 @@ services:
         - ../backend/.env
       environment:
         - PYTHONPATH=/backend
+        - AUTH_DISABLED=true
+        - DATABASE_URL=postgresql+psycopg2://postgres:postgres@host.docker.internal:5432/nutrition_tracker
       volumes:
         # Mount the whole backend so code changes are instant
         - ../backend:/backend

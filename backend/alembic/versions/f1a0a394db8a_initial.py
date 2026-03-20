@@ -1,8 +1,8 @@
 """initial
 
-Revision ID: bfaf900f91f3
+Revision ID: f1a0a394db8a
 Revises: 
-Create Date: 2026-03-16 11:45:45.755853
+Create Date: 2026-03-19 14:04:31.192790
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'bfaf900f91f3'
+revision: str = 'f1a0a394db8a'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -30,7 +30,9 @@ def upgrade() -> None:
     sa.Column('date_of_birth', sa.Date(), nullable=False),
     sa.Column('gender', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('cognito_sub', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('cognito_sub')
     )
     op.create_table('meals',
     sa.Column('date', sa.Date(), nullable=False),

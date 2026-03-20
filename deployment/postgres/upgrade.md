@@ -1,2 +1,2 @@
-alembic revision --autogenerate -m "users"
+alembic revision --autogenerate -m "initial"
 alembic upgrade head

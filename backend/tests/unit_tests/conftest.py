@@ -43,3 +43,4 @@ def mock_env(monkeypatch):
     """Default test environment variables."""
     monkeypatch.setenv("INTERNAL_TOKEN", "testtoken")
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("AUTH_DISABLED", "true")
