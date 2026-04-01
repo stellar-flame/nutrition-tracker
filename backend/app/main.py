@@ -5,7 +5,7 @@ from sqlalchemy import text
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends
 from app.database.database import get_engine, get_session
-from .api.routers import nutrition, app_health, internal
+from .api.routers import nutrition, app_health, internal, users
 
 logging.basicConfig(
     level=logging.INFO,
@@ -51,3 +51,4 @@ async def generic_exception_handler(request, exc):
 app.include_router(nutrition.router)
 app.include_router(app_health.router)   
 app.include_router(internal.router)
+app.include_router(users.router)

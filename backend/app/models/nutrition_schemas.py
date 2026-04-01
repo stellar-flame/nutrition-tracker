@@ -21,7 +21,6 @@ class UserBase(SQLModel):
 class UserRead(UserBase):
     id: int
 
-
 class MealStatus(StrEnum):
     PENDING = auto()
     COMPLETE= auto()

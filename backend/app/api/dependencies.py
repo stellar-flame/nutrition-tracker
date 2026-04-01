@@ -19,10 +19,7 @@ def verify_internal_token(x_internal_token: str = Header(...)) -> str:
     return x_internal_token
 
 
-def get_current_user(
-    authorization: str | None = Header(default=None),
-    db: Session = Depends(get_session),
-) -> User:
+def get_current_user(authorization: str | None = Header(default=None),db: Session = Depends(get_session)) -> User:
     cognito_sub = get_current_user_sub(authorization)
     user = user_repo.get_user_by_cognito_sub(db, cognito_sub)
     if not user:
