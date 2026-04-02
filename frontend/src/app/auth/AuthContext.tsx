@@ -21,9 +21,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [accessToken, setAccessToken] = useState<string | null>(
-    () => sessionStorage.getItem('accessToken')
-  );
+  const [accessToken, setAccessToken] = useState<string | null>(() => {
+    const token = sessionStorage.getItem('accessToken');
+    if (!token) return null;
+    const { exp } = JSON.parse(atob(token.split('.')[1]));
+    if (Date.now() / 1000 > exp) {
+      sessionStorage.removeItem('accessToken');
+      return null;
+    }
+    return token;
+  });
 
   const login = (email: string, password: string): Promise<void> => {
     return new Promise((resolve, reject) => {

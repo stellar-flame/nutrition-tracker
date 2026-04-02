@@ -31,7 +31,9 @@ api.interceptors.response.use(
     }
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       sessionStorage.removeItem('accessToken');
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     console.error('API error:', message);
     return Promise.reject(error);

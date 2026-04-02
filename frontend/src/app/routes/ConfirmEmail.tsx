@@ -7,7 +7,9 @@ export default function ConfirmEmail() {
   const { confirmSignUp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const email = (location.state as { email?: string })?.email ?? '';
+  const [email, setEmail] = useState<string>(
+    (location.state as { email?: string })?.email ?? ''
+  );
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,8 +31,17 @@ export default function ConfirmEmail() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Confirm your email</h1>
-      <p className={styles.info}>We sent a 6-digit code to <strong>{email}</strong></p>
+      {email
+        ? <p className={styles.info}>We sent a 6-digit code to <strong>{email}</strong></p>
+        : <p className={styles.info}>Enter the email you registered with to confirm it.</p>
+      }
       <form onSubmit={handleSubmit}>
+        {!email && (
+          <div className={styles.field}>
+            <label>Email</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+          </div>
+        )}
         <div className={styles.field}>
           <label>Verification code</label>
           <input type="text" value={code} onChange={e => setCode(e.target.value)} required />

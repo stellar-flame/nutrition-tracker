@@ -11,7 +11,7 @@ def test_create_user(client, session):
     )
 
     resp = client.post("/users/create", json=user.model_dump(mode='json'))
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     data = resp.json()
     assert data["first_name"] == "John"
     assert data["last_name"] == "Doe"
