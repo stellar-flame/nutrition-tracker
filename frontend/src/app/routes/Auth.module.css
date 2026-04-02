@@ -1,0 +1,75 @@
+.container {
+  max-width: 400px;
+  margin: 60px auto 0;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.title {
+  font-size: 1.8rem;
+  margin: 0 0 1.5rem;
+  text-align: center;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  font-size: 0.9rem;
+  color: #242424;
+}
+
+.field input,
+.field select {
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background-color: #faf8f8;
+  color: #3c3535;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field select option {
+  background-color: #242424;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: #646cff;
+}
+
+.error {
+  color: #f87171;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.submit {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.info {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1.25rem;
+  text-align: center;
+}

@@ -16,6 +16,7 @@ router = APIRouter(prefix="/nutrition", tags=["nutrition"])
 
 @router.get("/summary", response_model=NutritionSummary)
 def get_nutrition_summary(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", description="YYYY-MM-DD")], db: Session = Depends(get_session), user = Depends(get_current_user)):
+    print(f"Fetching meals for user {user.id} on date {date}")
     meals = meal_repo.get_meals_by_date(db, date, user)
     mealreads = [MealRead.model_validate(meal) for meal in meals]
     meal_items = [item for meal in mealreads for item in meal.items]
@@ -39,6 +40,7 @@ def get_meals(date: Annotated[str, Query(pattern=r"^\d{4}-\d{2}-\d{2}$", descrip
 
 @router.post("/meals", response_model=MealRead, status_code=201)
 def create_meal_endpoint(payload: MealCreateMinimal, db: Session = Depends(get_session), job: JobQueue = Depends(get_queue), user = Depends(get_current_user)):
+    print(f"Creating meal for user {user.id} with description '{payload.description}' at {payload.time} on {payload.date}")
     meal_date = payload.date 
     meal_time = payload.time
     created_at = datetime.now(timezone.utc).isoformat()
