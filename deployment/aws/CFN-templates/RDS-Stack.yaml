@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: RDS instance for the Nutrition application, deployed in private subnets for security.
+
+Parameters:
+  DBUsername:
+    Type: String
+    Default: postgres
+    Description: Master username for the RDS instance
+  
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Default: postgrespassword
+    Description: Master password for the RDS instance
+
+  DBName:
+    Type: String
+    Default: nutrition_tracker
+    Description: Database name for the RDS instance
+
+Resources:
+  RDSSubnetGroup:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties:
+        DBSubnetGroupDescription: Subnet group for RDS instance
+        SubnetIds:
+          - !ImportValue NutritionPrivateSubnet1
+          - !ImportValue NutritionPrivateSubnet2
+        Tags:
+          - Key: Name
+            Value: nutrition-rds-subnet-group
+
+    
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: nutrition-rds-instance
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBName: !Ref DBName
+      VPCSecurityGroups:
+        - !ImportValue NutritionRDSSecurityGroup
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+      MultiAZ: false
+      PubliclyAccessible: false
+      StorageType: gp2
+      Tags:
+        - Key: Name
+          Value: nutrition-rds-instance
+
+  DatabaseUrlParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /nutrition/dev/DATABASE_URL
+      Type: String
+      Value: !Sub
+        - "postgresql://${DBUsername}:${DBPassword}@${Endpoint}:${Port}/${DBName}"
+        - Endpoint: !GetAtt RDSInstance.Endpoint.Address
+          Port: !GetAtt RDSInstance.Endpoint.Port
+      Description: Database connection URL for the Nutrition application

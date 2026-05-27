@@ -48,7 +48,7 @@ Test with:
 ## Update Container 
 
 ```
-set TAG dev-$(date +%Y%m%d-%H%M%S)
+TAG=dev-$(date +%Y%m%d-%H%M%S)
 docker buildx build --platform linux/amd64,linux/arm64 --load --provenance=false -t havz/nutrition-tracker-api:$TAG .
 docker push havz/nutrition-tracker-api:$TAG
 ```

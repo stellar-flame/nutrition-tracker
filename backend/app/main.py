@@ -22,6 +22,25 @@ origins = [
     # add https://your-cloudfront-domain.com later if you use CloudFront
 ]
 
+@app.middleware("http")
+async def catch_exceptions(request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as exc:
+        logger.exception("Unhandled error on %s %s: %s", request.method, request.url.path, exc)
+        return JSONResponse(status_code=500, content={"message": "An internal error occurred"})
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    if exc.status_code >= 500:
+        logger.error("HTTP error on %s %s: %s", request.method, request.url.path, exc.detail)
+    else:
+        logger.info("HTTP error on %s %s: %s", request.method, request.url.path, exc.detail)
+    return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
+
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -29,23 +48,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request, exc):
-    logger.warning("HTTP error on %s %s: %s", request.method, request.url.path, exc.detail)
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"message": exc.detail},
-    )
-
-@app.exception_handler(Exception)
-async def generic_exception_handler(request, exc):
-    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
-    return JSONResponse(
-        status_code=500,
-        content={"message": f"An error occurred: {str(exc)}"},
-    )
 
 
 app.include_router(nutrition.router)

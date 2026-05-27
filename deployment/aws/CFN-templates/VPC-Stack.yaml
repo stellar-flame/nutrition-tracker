@@ -144,19 +144,29 @@ Outputs:
   VpcId:
     Description: ID of the VPC
     Value: !Ref NutritionVpc
+    Export:
+      Name: NutritionVpc
 
   PublicSubnet1Id:
     Description: ID of public subnet 1
     Value: !Ref PublicSubnet1
+    Export:
+      Name: NutritionPublicSubnet1
 
   PublicSubnet2Id:
     Description: ID of public subnet 2
     Value: !Ref PublicSubnet2
+    Export:
+      Name: NutritionPublicSubnet2
 
   PrivateSubnet1Id:
     Description: ID of private subnet 1
     Value: !Ref PrivateSubnet1  
+    Export:
+      Name: NutritionPrivateSubnet1
 
   PrivateSubnet2Id:
     Description: ID of private subnet 2
     Value: !Ref PrivateSubnet2
+    Export:
+      Name: NutritionPrivateSubnet2
