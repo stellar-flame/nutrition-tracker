@@ -220,7 +220,18 @@ Resources:
       LoadBalancers:
         - TargetGroupArn: !Ref TargetGroup
           ContainerName: nutrition-container
-          ContainerPort: 8000 
+          ContainerPort: 8000
+
+  ApiDnsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: nutritionapptracker.com.
+      Name: api.nutritionapptracker.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ALBLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ALBLoadBalancer.CanonicalHostedZoneID
+        EvaluateTargetHealth: true
 
 Outputs:
   ALBDNSName:
