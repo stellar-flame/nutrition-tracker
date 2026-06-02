@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DynamoDB PendingMeals staging table for the Nutrition application.
+
+Resources:
+  PendingMealsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: PendingMeals
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: meal_id
+          AttributeType: S
+        - AttributeName: user_id
+          AttributeType: N
+        - AttributeName: date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: meal_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: UserDateIndex
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+            - AttributeName: date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+Outputs:
+  TableName:
+    Value: !Ref PendingMealsTable
+    Export:
+      Name: NutritionPendingMealsTableName
+  TableArn:
+    Value: !GetAtt PendingMealsTable.Arn
+    Export:
+      Name: NutritionPendingMealsTableArn

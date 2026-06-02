@@ -1,37 +1,42 @@
-from asyncio import sleep
-
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
-from app.api.dependencies import verify_internal_token
-from app.database.database import get_session
-from app.models.nutrition_schemas import MealStatus
-from app.repositories import meal_repo
+from botocore.exceptions import ClientError
+from app.api.dependencies import verify_internal_token, get_dynamo
+from app.repositories import pending_meal_repo
 import logging
 
 router = APIRouter(prefix="/internal", tags=["internal"])
 logger = logging.getLogger(__name__)
 
+
 @router.post("/nutrition_result")
-def nutrition_result(payload: dict, db: Session = Depends(get_session),_: str = Depends(verify_internal_token)):
+def nutrition_result(
+    payload: dict,
+    dynamo=Depends(get_dynamo),
+    _: str = Depends(verify_internal_token),
+):
     logger.info(f"Received internal nutrition result: {payload}")
-   
     meal_id = payload["meal_id"]
     items = payload["items"]
-    
-    updated = meal_repo.attach_meal_items(db, meal_id, items)
-    if not updated:
-        raise HTTPException(status_code=404, detail="Meal not found")
-    
-    logger.info(f"Updated meal {meal_id} with nutrition info.")
-    
+
+    try:
+        pending_meal_repo.attach_ai_items(dynamo, meal_id, items)
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise HTTPException(status_code=404, detail="Pending meal not found or already expired")
+        raise
+
+    logger.info(f"Updated pending meal {meal_id} with AI nutrition info.")
     return {"status": "ok"}
 
 
 @router.post("/nutrition_failed")
-def mark_nutrition_failed(payload: dict, db: Session = Depends(get_session), _: str = Depends(verify_internal_token)):
-    updated = meal_repo.update_meal_status(db, payload["meal_id"], MealStatus.FAILED)
-    if not updated:
-        raise HTTPException(status_code=404, detail="Meal not found")
-   
-    logger.warning(f"Meal {payload['meal_id']} marked FAILED: {payload['error']}")
+def mark_nutrition_failed(
+    payload: dict,
+    dynamo=Depends(get_dynamo),
+    _: str = Depends(verify_internal_token),
+):
+    meal_id = payload["meal_id"]
+    error = payload.get("error", "Unknown error")
+    pending_meal_repo.set_failed_status(dynamo, meal_id, error)
+    logger.warning(f"Pending meal {meal_id} marked failed: {error}")
     return {"status": "ok"}

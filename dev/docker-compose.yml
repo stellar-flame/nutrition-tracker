@@ -4,16 +4,16 @@ services:
     ports:
       - "4566:4566"   # LocalStack edge port
     environment:
-      - SERVICES=sqs
+      - SERVICES=sqs,dynamodb
       - DEBUG=0
       - LS_LOG=warn
       - AWS_DEFAULT_REGION=us-east-1
     volumes:
       - localstack-data:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./init-queue.sh:/etc/localstack/init/ready.d/init-queue.sh:ro
+      - ./init-localstack.sh:/etc/localstack/init/ready.d/init-localstack.sh:ro
     healthcheck:
-      test: ["CMD", "bash", "-lc", "curl -s http://localstack:4566/_localstack/health | grep -q '\"sqs\": \"running\"'"]
+      test: ["CMD", "bash", "-lc", "curl -s http://localstack:4566/_localstack/health | grep -q '\"sqs\": \"running\"' && curl -s http://localstack:4566/_localstack/health | grep -q '\"dynamodb\": \"running\"'"]
       interval: 5s
       timeout: 3s
       retries: 30
@@ -30,6 +30,11 @@ services:
         - PYTHONPATH=/backend
         - AUTH_DISABLED=true
         - DATABASE_URL=postgresql+psycopg2://postgres:postgres@host.docker.internal:5432/nutrition_tracker
+        - DYNAMODB_ENDPOINT_URL=http://localstack:4566
+        - DYNAMODB_PENDING_MEALS_TABLE=PendingMeals
+        - AWS_DEFAULT_REGION=us-east-1
+        - AWS_ACCESS_KEY_ID=test
+        - AWS_SECRET_ACCESS_KEY=test
       volumes:
         # Mount the whole backend so code changes are instant
         - ../backend:/backend

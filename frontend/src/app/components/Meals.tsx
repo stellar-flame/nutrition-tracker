@@ -1,171 +1,152 @@
 import styles from './Meals.module.css';
 import { useMeals, createMeal } from '@/app/hooks/useMeals';
-import { useState } from "react";
+import { usePendingMeals, useApproveMeal, useDismissMeal } from '@/app/hooks/usePendingMeals';
+import PendingMealCard from './PendingMealCard';
+import { useState } from 'react';
 import { getToday } from '@/app/hooks/useDate';
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { MealItem } from '@/types/meals';
 
 
 export default function Meals() {
-    const { data: meals = [], isLoading, error: errorLoadingMeals } = useMeals(getToday());
+    const today = getToday();
+    const { data: meals = [], isLoading, error: errorLoadingMeals } = useMeals(today);
+    const { data: pendingMeals = [] } = usePendingMeals(today);
+    const approveMealMutation = useApproveMeal();
+    const dismissMealMutation = useDismissMeal();
+
     const qc = useQueryClient();
     const [newDesc, setNewDesc] = useState("");
     const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set());
-    
+
     const toggleMeal = (key: string) => {
         setExpandedMeals(prev => {
             const next = new Set(prev);
-            if (next.has(key)) {
-                next.delete(key);
-            } else {
-                next.add(key);
-            }
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
             return next;
         });
     };
-    const { mutate: mutateFn, isPending, error: errorAddingMeal, reset } = useMutation({  
-        mutationFn: (description: string) => createMeal(description, getToday()),
+
+    const { mutate: mutateFn, isPending, error: errorAddingMeal, reset } = useMutation({
+        mutationFn: (description: string) => createMeal(description, today),
         onSuccess: async () => {
             await Promise.all([
-                qc.invalidateQueries({ queryKey: ["meals", getToday()] }),
-                qc.invalidateQueries({ queryKey: ["nutrition-summary", getToday()] })
+                qc.invalidateQueries({ queryKey: ['pending-meals', today] }),
+                qc.invalidateQueries({ queryKey: ['nutrition-summary', today] }),
             ]);
             setNewDesc("");
         }
     });
 
-    const add_meal_button_text = isPending ? "Adding..." : "Add";
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newDesc.trim()) return;
-      mutateFn(newDesc.trim());
+        mutateFn(newDesc.trim());
     };
 
     if (isLoading) return <div>Loading…</div>;
     if (errorLoadingMeals) return <div role="alert">{errorLoadingMeals?.message ?? 'Failed to load'}</div>;
-    if (!meals) return <div>No data</div>;
+
     return (
-    <section role="region" aria-label="Meals logged today" className={styles.section}>
-      <h2 className={styles.title}>Meals today</h2>
-      {/* add input box to capture new meal*/}
-      {errorAddingMeal && (
-        <div role="alert" className={styles.error}>
-          {errorAddingMeal?.message ?? 'Failed to add meal'}
-        </div>
-      )}
-      <form role="form" className={styles.newMealForm} onSubmit={handleSubmit}>
-        <input 
-          type="text"
-          placeholder="New meal description"
-          value={newDesc}
-          onChange={(e) => {
-            if (errorAddingMeal) reset();
-            setNewDesc(e.target.value)} 
-          }
+        <section role="region" aria-label="Meals logged today" className={styles.section}>
+            <h2 className={styles.title}>Meals today</h2>
 
-          disabled={isPending}
-        />
-        <button type="submit" disabled={isPending}>{add_meal_button_text}</button>
-      </form>
-      {meals.length === 0 ? (
-        <p className={styles.empty}>No meals logged yet.</p>
-      ) : (
-        <ul role="list" className={styles.list}>
-          {meals.map((meal, idx) => {
-            const totalKcal = meal.items.reduce((sum, it) => sum + it.caloriesKcal, 0);
-            const key = `${meal.date}-${meal.time}-${idx}`;
-            const isExpanded = expandedMeals.has(key);
-             const isPending = meal.status === 'pending';
-  
-        // Pending/Processing state
-        if (isPending) {
-          return (
-            <li key={key} className={`${styles.meal} ${styles.mealPending}`}>
-              <div className={styles.pendingHeader}>
-                <span className={styles.pendingTitle}>{meal.description}</span>
-                <span className={styles.pendingBadge}>
-                  <span className={styles.spinner}></span>
-                  Analyzing nutrition...
-                </span>
-              </div>
-              <span className={styles.mealTime}>{meal.time}</span>
-            </li>
-          );
-        }
-        else
-            return (
-              <li key={key} role="listitem" className={styles.meal} aria-label={`${meal.description} at ${meal.time}`}>
-                {meal.status === 'pending' && 
-                  <div className={styles.mealHeader}>
-                    <span className={styles.pendingIndicator} title="Nutrition info is being processed">⏳ {meal.description}</span>
-                    <span className={styles.mealTime}>{meal.time}</span>
-                  </div>
-                }
-                {meal.status === 'failed' &&
-                  <div className={styles.mealHeader}>
-                    <span className={styles.failedIndicator} title="Failed to analyze nutrition">❌ {meal.description}</span>
-                    <span className={styles.failedMessage}>Failed to analyze nutrition</span>
-                    <span className={styles.mealTime}>{meal.time}</span>
-                  </div>
-                }
-                {meal.status === 'complete' &&
-                  <button 
-                    className={styles.mealHeader}
-                    onClick={() => toggleMeal(key)}
-                    aria-expanded={isExpanded}
-                    aria-controls={`items-${key}`}
-                  >
-                    <div className={styles.mealMeta}>
-                      <span className={`${styles.chevron} ${isExpanded ? styles.chevronExpanded : ''}`}>▶</span>
-                      <strong className={styles.mealName}>{meal.description}</strong>
-                      <span className={styles.mealTime}>{meal.time}</span>
-                    </div>
-                    <div className={styles.mealTotal}>{totalKcal.toLocaleString()} kcal</div>
-                  </button>
-                }
+            {errorAddingMeal && (
+                <div role="alert" className={styles.error}>
+                    {errorAddingMeal?.message ?? 'Failed to add meal'}
+                </div>
+            )}
 
-                <ul role="list" className={`${styles.mealItems} ${isExpanded ? styles.mealItemsExpanded : ''}`} id={`items-${key}`} aria-hidden={!isExpanded}>
-                  {meal.items.map((it, i) => (
-                    <li key={i} role="listitem" className={styles.mealItem}>
-                       <div className={styles.itemHeader}>
-                          <span className={styles.itemDesc}>{it.description}</span>
-                          <span className={styles.itemCalories}>{it.caloriesKcal} kcal</span>
-                        </div>
-                        <div className={styles.itemNutrients}>
-                          <span className={styles.nutrient}>
-                            <span className={styles.nutrientLabel}>Protein</span>
-                            <span className={styles.nutrientValue}>{it.proteinG}g</span>
-                          </span>
-                          <span className={styles.nutrient}>
-                            <span className={styles.nutrientLabel}>Carbs</span>
-                            <span className={styles.nutrientValue}>{it.carbsG}g</span>
-                          </span>
-                          <span className={styles.nutrient}>
-                            <span className={styles.nutrientLabel}>Fat</span>
-                            <span className={styles.nutrientValue}>{it.fatG}g</span>
-                          </span>
-                          <span className={styles.nutrient}>
-                            <span className={styles.nutrientLabel}>Fiber</span>
-                            <span className={styles.nutrientValue}>{it.fiberG}g</span>
-                          </span>
-                          <span className={styles.nutrient}>
-                            <span className={styles.nutrientLabel}>Sugar</span>
-                            <span className={styles.nutrientValue}>{it.sugarG}g</span>
-                          </span>
-                          <span className={styles.nutrient}>
-                            <span className={styles.nutrientLabel}>Sodium</span>
-                            <span className={styles.nutrientValue}>{it.sodiumMg}mg</span>
-                          </span>
-                        </div>
-                    </li>
-                  ))}
+            <form role="form" className={styles.newMealForm} onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    placeholder="New meal description"
+                    value={newDesc}
+                    onChange={(e) => {
+                        if (errorAddingMeal) reset();
+                        setNewDesc(e.target.value);
+                    }}
+                    disabled={isPending}
+                />
+                <button type="submit" disabled={isPending}>
+                    {isPending ? 'Adding...' : 'Add'}
+                </button>
+            </form>
+
+            {pendingMeals.length === 0 && meals.length === 0 && (
+                <p className={styles.empty}>No meals logged yet.</p>
+            )}
+
+            {pendingMeals.length > 0 && (
+                <>
+                    <p className={styles.pendingSectionTitle}>Awaiting review</p>
+                    <ul role="list" className={styles.list}>
+                        {pendingMeals.map(meal => (
+                            <PendingMealCard
+                                key={meal.meal_id}
+                                meal={meal}
+                                isApproving={approveMealMutation.isPending}
+                                onApprove={(items?: MealItem[]) =>
+                                    approveMealMutation.mutate({ meal_id: meal.meal_id, payload: { items } })
+                                }
+                                onDismiss={() => dismissMealMutation.mutate(meal.meal_id)}
+                            />
+                        ))}
+                    </ul>
+                </>
+            )}
+
+            {meals.length > 0 && (
+                <ul role="list" className={styles.list} style={{ marginTop: pendingMeals.length > 0 ? '16px' : undefined }}>
+                    {meals.map((meal, idx) => {
+                        const totalKcal = meal.items.reduce((sum, it) => sum + it.caloriesKcal, 0);
+                        const key = `${meal.date}-${meal.time}-${idx}`;
+                        const isExpanded = expandedMeals.has(key);
+                        return (
+                            <li key={key} role="listitem" className={styles.meal} aria-label={`${meal.description} at ${meal.time}`}>
+                                <button
+                                    className={styles.mealHeader}
+                                    onClick={() => toggleMeal(key)}
+                                    aria-expanded={isExpanded}
+                                    aria-controls={`items-${key}`}
+                                >
+                                    <div className={styles.mealMeta}>
+                                        <span className={`${styles.chevron} ${isExpanded ? styles.chevronExpanded : ''}`}>▶</span>
+                                        <strong className={styles.mealName}>{meal.description}</strong>
+                                        <span className={styles.mealTime}>{meal.time}</span>
+                                    </div>
+                                    <div className={styles.mealTotal}>{totalKcal.toLocaleString()} kcal</div>
+                                </button>
+
+                                <ul
+                                    role="list"
+                                    className={`${styles.mealItems} ${isExpanded ? styles.mealItemsExpanded : ''}`}
+                                    id={`items-${key}`}
+                                    aria-hidden={!isExpanded}
+                                >
+                                    {meal.items.map((it, i) => (
+                                        <li key={i} role="listitem" className={styles.mealItem}>
+                                            <div className={styles.itemHeader}>
+                                                <span className={styles.itemDesc}>{it.description}</span>
+                                                <span className={styles.itemCalories}>{it.caloriesKcal} kcal</span>
+                                            </div>
+                                            <div className={styles.itemNutrients}>
+                                                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Protein</span><span className={styles.nutrientValue}>{it.proteinG}g</span></span>
+                                                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Carbs</span><span className={styles.nutrientValue}>{it.carbsG}g</span></span>
+                                                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Fat</span><span className={styles.nutrientValue}>{it.fatG}g</span></span>
+                                                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Fiber</span><span className={styles.nutrientValue}>{it.fiberG}g</span></span>
+                                                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Sugar</span><span className={styles.nutrientValue}>{it.sugarG}g</span></span>
+                                                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Sodium</span><span className={styles.nutrientValue}>{it.sodiumMg}mg</span></span>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </li>
+                        );
+                    })}
                 </ul>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </section>
-  );
+            )}
+        </section>
+    );
 }

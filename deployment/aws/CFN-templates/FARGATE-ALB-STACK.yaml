@@ -97,6 +97,22 @@ Resources:
               Action:
                 - sqs:SendMessage
               Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:NutritionMealQueue"
+      - PolicyName: dynamodb-pending-meals
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+              Resource:
+                - !ImportValue NutritionPendingMealsTableArn
+                - !Sub
+                  - "${TableArn}/index/UserDateIndex"
+                  - TableArn: !ImportValue NutritionPendingMealsTableArn
 
   ApiLogGroup:
       Type: AWS::Logs::LogGroup
@@ -131,6 +147,8 @@ Resources:
                 Value: !Ref AWS::Region
               - Name: SQS_QUEUE_URL
                 Value: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/NutritionMealQueue"
+              - Name: DYNAMODB_PENDING_MEALS_TABLE
+                Value: !ImportValue NutritionPendingMealsTableName
             Secrets:
               - Name: OPENAI_API_KEY
                 ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/OPENAI_API_KEY"

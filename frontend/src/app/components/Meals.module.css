@@ -281,3 +281,155 @@
   color: var(--color-muted, #666);
   font-size: 13px;
 }
+
+/* ===== Approval Card ===== */
+
+.mealApproval {
+  border: 1px solid #a3c4f3;
+  background: #f0f7ff;
+}
+
+.mealFailed {
+  border: 1px solid #fca5a5;
+  background: #fff5f5;
+}
+
+.approvalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.approvalTotal {
+  font-weight: 700;
+  color: var(--color-primary, #2f6fed);
+}
+
+.approvalActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.approveButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.approveButton:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.approveButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.editButton {
+  padding: 8px 16px;
+  border: 1px solid #2f6fed;
+  border-radius: 8px;
+  background: transparent;
+  color: #2f6fed;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.editButton:hover:not(:disabled) {
+  background: rgba(47, 111, 237, 0.06);
+}
+
+.editButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cancelButton {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border, #dcdcdc);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-muted, #666);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.dismissButton {
+  padding: 8px 16px;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dismissButton:hover {
+  background: rgba(220, 38, 38, 0.06);
+}
+
+/* ===== Edit Mode ===== */
+
+.editRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editDesc {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border, #dcdcdc);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.editNutrients {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 12px;
+}
+
+.editField {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.editInput {
+  padding: 4px 6px;
+  border: 1px solid var(--color-border, #dcdcdc);
+  border-radius: 4px;
+  font-size: 13px;
+  width: 100%;
+}
+
+.editInput:focus {
+  outline: 2px solid #2f6fed;
+  outline-offset: 1px;
+}
+
+/* ===== Section separator ===== */
+
+.pendingSectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-muted, #666);
+  margin: 12px 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

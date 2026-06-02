@@ -1,21 +1,37 @@
 export interface MealItem {
-    description: string;   // description of the meal
-    caloriesKcal: number; // kilocalories (kcal)
-    proteinG: number;     // grams (g)
-    carbsG: number;       // grams (g)
-    fatG: number;         // grams (g)
-    fiberG: number;       // grams (g)
-    sugarG: number;       // grams (g)
-    sodiumMg: number;     // milligrams (mg>
+    description: string;
+    caloriesKcal: number;
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+    fiberG: number;
+    sugarG: number;
+    sodiumMg: number;
 }
 
-export interface Meal { 
-    description: string;   // description of the meal
-    items: MealItem[]; // array of meal items
-    date: string;         // YYYY-MM-DD
-    time: string;         // HH:MM (24-hour format)
-    created_at: string;    // ISO timestamp of meal creation
-    serving_size: number; // number of servings
-    status: 'pending' |  'complete' | 'failed'; // status of the meal
+export interface Meal {
+    description: string;
+    items: MealItem[];
+    date: string;
+    time: string;
+    created_at: string;
+    serving_size: number;
+    status: 'complete';
+}
+
+export type PendingMealStatus = 'pending_ai' | 'pending_approval' | 'failed';
+
+export interface PendingMeal {
+    meal_id: string;
+    description: string;
+    date: string;
+    time: string;
+    created_at: string;
+    status: PendingMealStatus;
+    items: MealItem[];
+}
+
+export interface MealApprovePayload {
+    items?: MealItem[];
 }
 

@@ -3,10 +3,15 @@ import os
 from app.ports.job_queue import JobQueue
 from app.infrastructure.queues.sqs_job_queue import SQSQueue
 from app.infrastructure.auth.cognito import get_current_user_sub
+from app.infrastructure.dynamo.dynamo_client import get_dynamo_table
 from app.database.database import get_session
 from app.repositories import user_repo
 from app.models.db_models import User
 from sqlmodel import Session
+
+def get_dynamo():
+    return get_dynamo_table()
+
 
 def get_queue() -> JobQueue:
     if os.environ.get("SQS_QUEUE_URL"):
