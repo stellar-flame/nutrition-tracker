@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
+from app.models.nutrition_schemas import MealItemBase
 
 
 def _floats_to_decimal(obj):
@@ -51,7 +52,7 @@ def get_pending_meal(table, meal_id: str) -> dict | None:
     return _decimals_to_float(item) if item else None
 
 
-def attach_ai_items(table, meal_id: str, items: list[dict]) -> None:
+def attach_ai_items(table, meal_id: str, items: list[MealItemBase]) -> None:
     """Update pending meal with AI-estimated items and advance to pending_approval status.
     Raises ClientError with ConditionalCheckFailedException if the meal no longer exists."""
     table.update_item(
@@ -61,7 +62,7 @@ def attach_ai_items(table, meal_id: str, items: list[dict]) -> None:
         ExpressionAttributeNames={"#s": "status", "#i": "items"},
         ExpressionAttributeValues={
             ":status": "pending_approval",
-            ":items": _floats_to_decimal(items),
+            ":items": _floats_to_decimal([i.model_dump() for i in items]),
         },
     )
 

@@ -34,7 +34,6 @@ class MealBase(SQLModel):
     description: str
     serving_size: float = 1.0
     status: MealStatus = MealStatus.PENDING
-    user_id: int
 
 class MealItemBase(SQLModel):
     description: str
@@ -77,27 +76,25 @@ class PendingMealStatus(StrEnum):
     FAILED = "failed"
 
 
-class PendingMealItemEdit(BaseModel):
-    description: str
-    caloriesKcal: float = 0.0
-    proteinG: float = 0.0
-    carbsG: float = 0.0
-    fatG: float = 0.0
-    fiberG: float = 0.0
-    sugarG: float = 0.0
-    sodiumMg: float = 0.0
-
-
 class PendingMealRead(BaseModel):
     meal_id: str
-    user_id: int
     date: str
     time: str
     description: str
     created_at: str
     status: PendingMealStatus
-    items: List[PendingMealItemEdit] = []
+    items: List[MealItemBase] = []
 
 
 class MealApprovePayload(BaseModel):
-    items: List[PendingMealItemEdit] | None = None
+    items: List[MealItemBase] | None = None
+
+
+class NutritionResultPayload(BaseModel):
+    meal_id: str
+    items: List[MealItemBase]
+
+
+class NutritionFailedPayload(BaseModel):
+    meal_id: str
+    error: str = "Unknown error"

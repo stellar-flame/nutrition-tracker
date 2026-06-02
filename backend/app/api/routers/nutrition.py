@@ -6,6 +6,7 @@ from app.models.nutrition_schemas import (
     MealRead,
     MealCreateMinimal,
     MealApprovePayload,
+    MealItemBase,
     MealStatus,
     NutritionSummary,
     PendingMealRead,
@@ -116,10 +117,10 @@ def approve_meal(
     if pending["status"] != PendingMealStatus.PENDING_APPROVAL:
         raise HTTPException(status_code=409, detail="Meal is not ready for approval")
 
-    items_to_commit = (
-        [i.model_dump() for i in payload.items]
+    items_to_commit: list[MealItemBase] = (
+        payload.items
         if payload.items is not None
-        else [dict(i) for i in pending["items"]]
+        else [MealItemBase(**dict(i)) for i in pending["items"]]
     )
 
     meal = Meal(
