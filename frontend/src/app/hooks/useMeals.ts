@@ -1,6 +1,6 @@
 import type { Meal, PendingMeal } from '@/types/meals';
 import { api } from '@/lib/apiClient';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getToday, getCurrentTime } from './useDate';
 import type { AxiosError } from 'axios';
 
@@ -17,9 +17,24 @@ export async function createMeal(description: string, date: string): Promise<Pen
   return response.data;
 }
 
+async function deleteMeal(meal_id: number): Promise<void> {
+  await api.delete(`/nutrition/meals/${meal_id}`);
+}
+
 export function useMeals(date: string = getToday()) {
   return useQuery<Meal[], AxiosError>({
     queryKey: ['meals', date],
     queryFn: () => fetchMeals(date),
+  });
+}
+
+export function useDeleteMeal(date: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: deleteMeal,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['meals', date] });
+      qc.invalidateQueries({ queryKey: ['nutrition-summary', date] });
+    },
   });
 }

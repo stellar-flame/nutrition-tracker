@@ -1,5 +1,5 @@
 import styles from './Meals.module.css';
-import { useMeals, createMeal } from '@/app/hooks/useMeals';
+import { useMeals, createMeal, useDeleteMeal } from '@/app/hooks/useMeals';
 import { usePendingMeals, useApproveMeal, useDismissMeal } from '@/app/hooks/usePendingMeals';
 import PendingMealCard from './PendingMealCard';
 import { useState } from 'react';
@@ -14,16 +14,17 @@ export default function Meals() {
     const { data: pendingMeals = [] } = usePendingMeals(today);
     const approveMealMutation = useApproveMeal();
     const dismissMealMutation = useDismissMeal();
+    const deleteMealMutation = useDeleteMeal(today);
 
     const qc = useQueryClient();
     const [newDesc, setNewDesc] = useState("");
-    const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set());
+    const [expandedMeals, setExpandedMeals] = useState<Set<number>>(new Set());
 
-    const toggleMeal = (key: string) => {
+    const toggleMeal = (id: number) => {
         setExpandedMeals(prev => {
             const next = new Set(prev);
-            if (next.has(key)) next.delete(key);
-            else next.add(key);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
             return next;
         });
     };
@@ -99,30 +100,37 @@ export default function Meals() {
 
             {meals.length > 0 && (
                 <ul role="list" className={styles.list} style={{ marginTop: pendingMeals.length > 0 ? '16px' : undefined }}>
-                    {meals.map((meal, idx) => {
+                    {meals.map((meal) => {
                         const totalKcal = meal.items.reduce((sum, it) => sum + it.caloriesKcal, 0);
-                        const key = `${meal.date}-${meal.time}-${idx}`;
-                        const isExpanded = expandedMeals.has(key);
+                        const isExpanded = expandedMeals.has(meal.id);
                         return (
-                            <li key={key} role="listitem" className={styles.meal} aria-label={`${meal.description} at ${meal.time}`}>
-                                <button
-                                    className={styles.mealHeader}
-                                    onClick={() => toggleMeal(key)}
-                                    aria-expanded={isExpanded}
-                                    aria-controls={`items-${key}`}
-                                >
-                                    <div className={styles.mealMeta}>
-                                        <span className={`${styles.chevron} ${isExpanded ? styles.chevronExpanded : ''}`}>▶</span>
-                                        <strong className={styles.mealName}>{meal.description}</strong>
-                                        <span className={styles.mealTime}>{meal.time}</span>
-                                    </div>
-                                    <div className={styles.mealTotal}>{totalKcal.toLocaleString()} kcal</div>
-                                </button>
+                            <li key={meal.id} role="listitem" className={styles.meal} aria-label={`${meal.description} at ${meal.time}`}>
+                                <div className={styles.mealHeader}>
+                                    <button
+                                        className={styles.mealExpand}
+                                        onClick={() => toggleMeal(meal.id)}
+                                        aria-expanded={isExpanded}
+                                        aria-controls={`items-${meal.id}`}
+                                    >
+                                        <div className={styles.mealMeta}>
+                                            <span className={`${styles.chevron} ${isExpanded ? styles.chevronExpanded : ''}`}>▶</span>
+                                            <strong className={styles.mealName}>{meal.description}</strong>
+                                            <span className={styles.mealTime}>{meal.time}</span>
+                                        </div>
+                                        <div className={styles.mealTotal}>{totalKcal.toLocaleString()} kcal</div>
+                                    </button>
+                                    <button
+                                        className={styles.deleteMealBtn}
+                                        onClick={() => deleteMealMutation.mutate(meal.id)}
+                                        disabled={deleteMealMutation.isPending}
+                                        aria-label={`Delete ${meal.description}`}
+                                    >×</button>
+                                </div>
 
                                 <ul
                                     role="list"
                                     className={`${styles.mealItems} ${isExpanded ? styles.mealItemsExpanded : ''}`}
-                                    id={`items-${key}`}
+                                    id={`items-${meal.id}`}
                                     aria-hidden={!isExpanded}
                                 >
                                     {meal.items.map((it, i) => (

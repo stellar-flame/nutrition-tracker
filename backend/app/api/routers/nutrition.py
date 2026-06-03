@@ -101,6 +101,20 @@ def dismiss_pending_meal(
     pending_meal_repo.delete_pending_meal(dynamo, meal_id)
 
 
+@router.delete("/meals/{meal_id}", status_code=204)
+def delete_meal(
+    meal_id: int,
+    db: Session = Depends(get_session),
+    user=Depends(get_current_user),
+):
+    meal = db.get(Meal, meal_id)
+    if not meal:
+        raise HTTPException(status_code=404, detail="Meal not found")
+    if meal.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    meal_repo.delete_meal(db, meal_id)
+
+
 @router.post("/meals/{meal_id}/approve", response_model=MealRead, status_code=201)
 def approve_meal(
     meal_id: str,

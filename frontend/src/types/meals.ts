@@ -10,6 +10,7 @@ export interface MealItem {
 }
 
 export interface Meal {
+    id: number;
     description: string;
     items: MealItem[];
     date: string;

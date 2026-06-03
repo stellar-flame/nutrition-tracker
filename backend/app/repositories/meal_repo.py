@@ -36,8 +36,19 @@ def update_meal_status(db: Session, meal_id: int, status: MealStatus) -> Meal:
     meal = db.get(Meal, meal_id)
     if not meal:
         raise ValueError(f"Meal with id {meal_id} not found")
-    
+
     meal.status = status
+    db.commit()
+    return meal
+
+
+def delete_meal(db: Session, meal_id: int) -> Meal | None:
+    meal = db.get(Meal, meal_id)
+    if not meal:
+        return None
+    for item in db.exec(select(MealItem).where(MealItem.meal_id == meal_id)).all():
+        db.delete(item)
+    db.delete(meal)
     db.commit()
     return meal
 
