@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { PendingMeal, MealItem } from '@/types/meals';
 import styles from './Meals.module.css';
 
@@ -9,9 +9,36 @@ interface Props {
   isApproving: boolean;
 }
 
+const STEP = 0.25;
+const MIN_SERVING = 0.25;
+
+function round2(n: number) {
+  return Math.round(n * 100) / 100;
+}
+
+function scaleItem(item: MealItem, serving: number): MealItem {
+  return {
+    description: item.description,
+    caloriesKcal: round2(item.caloriesKcal * serving),
+    proteinG: round2(item.proteinG * serving),
+    carbsG: round2(item.carbsG * serving),
+    fatG: round2(item.fatG * serving),
+    fiberG: round2(item.fiberG * serving),
+    sugarG: round2(item.sugarG * serving),
+    sodiumMg: round2(item.sodiumMg * serving),
+  };
+}
+
 export default function PendingMealCard({ meal, onApprove, onDismiss, isApproving }: Props) {
-  const [editMode, setEditMode] = useState(false);
-  const [editedItems, setEditedItems] = useState<MealItem[]>([]);
+  const [servings, setServings] = useState<number[]>(() => meal.items.map(() => 1));
+  const [kept, setKept] = useState<boolean[]>(() => meal.items.map(() => true));
+
+  useEffect(() => {
+    if (meal.items.length > 0) {
+      setServings(meal.items.map(() => 1));
+      setKept(meal.items.map(() => true));
+    }
+  }, [meal.items.length]);
 
   if (meal.status === 'pending_ai') {
     return (
@@ -43,20 +70,31 @@ export default function PendingMealCard({ meal, onApprove, onDismiss, isApprovin
     );
   }
 
-  const handleEditStart = () => {
-    setEditedItems(meal.items.map(item => ({ ...item })));
-    setEditMode(true);
-  };
+  const scaledItems = meal.items.map((item, i) => scaleItem(item, servings[i]));
+  const totalKcal = scaledItems
+    .filter((_, i) => kept[i])
+    .reduce((s, it) => s + it.caloriesKcal, 0);
+  const anyKept = kept.some(Boolean);
 
-  const handleFieldChange = (idx: number, field: keyof MealItem, value: string) => {
-    setEditedItems(prev =>
-      prev.map((item, i) =>
-        i === idx ? { ...item, [field]: field === 'description' ? value : parseFloat(value) || 0 } : item
-      )
+  const adjustServing = (i: number, delta: number) => {
+    setServings(prev =>
+      prev.map((s, idx) => idx === i ? Math.max(MIN_SERVING, round2(s + delta)) : s)
     );
   };
 
-  const totalKcal = (editMode ? editedItems : meal.items).reduce((s, it) => s + it.caloriesKcal, 0);
+  const handleServingInput = (i: number, raw: string) => {
+    const v = parseFloat(raw);
+    if (!isNaN(v) && v >= MIN_SERVING) {
+      setServings(prev => prev.map((s, idx) => idx === i ? v : s));
+    }
+  };
+
+  const handleApprove = () => {
+    const items = meal.items
+      .filter((_, i) => kept[i])
+      .map((item, i) => scaleItem(item, servings[i]));
+    onApprove(items);
+  };
 
   return (
     <li className={`${styles.meal} ${styles.mealApproval}`}>
@@ -65,94 +103,72 @@ export default function PendingMealCard({ meal, onApprove, onDismiss, isApprovin
           <strong className={styles.mealName}>{meal.description}</strong>
           <span className={styles.mealTime}>{meal.time}</span>
         </div>
-        <span className={styles.approvalTotal}>{totalKcal.toLocaleString()} kcal</span>
+        <span className={styles.approvalTotal}>{round2(totalKcal).toLocaleString()} kcal</span>
       </div>
 
       <ul className={`${styles.mealItems} ${styles.mealItemsExpanded}`}>
-        {(editMode ? editedItems : meal.items).map((item, i) => (
-          <li key={i} className={styles.mealItem}>
-            {editMode ? (
-              <div className={styles.editRow}>
-                <input
-                  className={styles.editDesc}
-                  value={item.description}
-                  onChange={e => handleFieldChange(i, 'description', e.target.value)}
-                />
-                <div className={styles.editNutrients}>
-                  {(['caloriesKcal', 'proteinG', 'carbsG', 'fatG', 'fiberG', 'sugarG', 'sodiumMg'] as const).map(field => (
-                    <label key={field} className={styles.editField}>
-                      <span className={styles.nutrientLabel}>{fieldLabel(field)}</span>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        value={item[field]}
-                        onChange={e => handleFieldChange(i, field, e.target.value)}
-                        className={styles.editInput}
-                      />
-                    </label>
-                  ))}
+        {meal.items.map((item, i) => {
+         if (!kept[i]) return null;
+          const scaled = scaledItems[i];
+          return (
+            <li key={i} className={styles.mealItem}>
+              <div className={styles.itemHeader}>
+                <span className={styles.itemDesc}>{item.description}</span>
+                <div className={styles.itemActions}>
+                  <div className={styles.servingControl}>
+                    <button
+                      className={styles.servingBtn}
+                      onClick={() => adjustServing(i, -STEP)}
+                      disabled={servings[i] <= MIN_SERVING}
+                      aria-label="Decrease serving"
+                    >−</button>
+                    <input
+                      className={styles.servingInput}
+                      type="number"
+                      step={STEP}
+                      min={MIN_SERVING}
+                      value={servings[i]}
+                      onChange={e => handleServingInput(i, e.target.value)}
+                    />
+                    <button
+                      className={styles.servingBtn}
+                      onClick={() => adjustServing(i, STEP)}
+                      aria-label="Increase serving"
+                    >+</button>
+                  </div>
+                  <button
+                    className={styles.removeItemBtn}
+                    onClick={() => setKept(prev => prev.map((k, idx) => idx === i ? false : k))}
+                    aria-label="Remove item"
+                  >×</button>
                 </div>
               </div>
-            ) : (
-              <>
-                <div className={styles.itemHeader}>
-                  <span className={styles.itemDesc}>{item.description}</span>
-                  <span className={styles.itemCalories}>{item.caloriesKcal} kcal</span>
-                </div>
-                <div className={styles.itemNutrients}>
-                  <span className={styles.nutrient}><span className={styles.nutrientLabel}>Protein</span><span className={styles.nutrientValue}>{item.proteinG}g</span></span>
-                  <span className={styles.nutrient}><span className={styles.nutrientLabel}>Carbs</span><span className={styles.nutrientValue}>{item.carbsG}g</span></span>
-                  <span className={styles.nutrient}><span className={styles.nutrientLabel}>Fat</span><span className={styles.nutrientValue}>{item.fatG}g</span></span>
-                  <span className={styles.nutrient}><span className={styles.nutrientLabel}>Fiber</span><span className={styles.nutrientValue}>{item.fiberG}g</span></span>
-                  <span className={styles.nutrient}><span className={styles.nutrientLabel}>Sugar</span><span className={styles.nutrientValue}>{item.sugarG}g</span></span>
-                  <span className={styles.nutrient}><span className={styles.nutrientLabel}>Sodium</span><span className={styles.nutrientValue}>{item.sodiumMg}mg</span></span>
-                </div>
-              </>
-            )}
-          </li>
-        ))}
+              <div className={styles.itemNutrients}>
+                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Calories</span><span className={styles.nutrientValue}>{scaled.caloriesKcal} kcal</span></span>
+                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Protein</span><span className={styles.nutrientValue}>{scaled.proteinG}g</span></span>
+                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Carbs</span><span className={styles.nutrientValue}>{scaled.carbsG}g</span></span>
+                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Fat</span><span className={styles.nutrientValue}>{scaled.fatG}g</span></span>
+                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Fiber</span><span className={styles.nutrientValue}>{scaled.fiberG}g</span></span>
+                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Sugar</span><span className={styles.nutrientValue}>{scaled.sugarG}g</span></span>
+                <span className={styles.nutrient}><span className={styles.nutrientLabel}>Sodium</span><span className={styles.nutrientValue}>{scaled.sodiumMg}mg</span></span>
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       <div className={styles.approvalActions}>
-        {editMode ? (
-          <>
-            <button
-              className={styles.approveButton}
-              onClick={() => onApprove(editedItems)}
-              disabled={isApproving}
-            >
-              {isApproving ? 'Saving...' : 'Save & Approve'}
-            </button>
-            <button className={styles.cancelButton} onClick={() => setEditMode(false)} disabled={isApproving}>
-              Cancel
-            </button>
-          </>
-        ) : (
-          <>
-            <button className={styles.approveButton} onClick={() => onApprove()} disabled={isApproving}>
-              {isApproving ? 'Approving...' : 'Approve'}
-            </button>
-            <button className={styles.editButton} onClick={handleEditStart} disabled={isApproving}>
-              Edit
-            </button>
-          </>
-        )}
+        <button
+          className={styles.approveButton}
+          onClick={handleApprove}
+          disabled={isApproving || !anyKept}
+        >
+          {isApproving ? 'Approving...' : 'Approve'}
+        </button>
+        <button className={styles.dismissButton} onClick={onDismiss} disabled={isApproving}>
+          Dismiss
+        </button>
       </div>
     </li>
   );
-}
-
-function fieldLabel(field: keyof MealItem): string {
-  const labels: Record<keyof MealItem, string> = {
-    description: 'Description',
-    caloriesKcal: 'Calories',
-    proteinG: 'Protein (g)',
-    carbsG: 'Carbs (g)',
-    fatG: 'Fat (g)',
-    fiberG: 'Fiber (g)',
-    sugarG: 'Sugar (g)',
-    sodiumMg: 'Sodium (mg)',
-  };
-  return labels[field];
 }
