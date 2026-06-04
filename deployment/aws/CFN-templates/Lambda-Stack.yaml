@@ -1,0 +1,113 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda function and layer for the Nutrition application async meal processing pipeline.
+
+Parameters:
+  S3Bucket:
+    Description: S3 bucket containing the Lambda zip artifacts
+    Type: String
+
+  FunctionS3Key:
+    Description: S3 key for lambda.zip (built by Dockerfile.funczip)
+    Type: String
+    Default: lambda.zip
+
+  LayerS3Key:
+    Description: S3 key for lambda-layer.zip (built by Dockerfile.layerzip)
+    Type: String
+    Default: lambda-layer.zip
+
+Resources:
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/nutrition-lambda
+      RetentionInDays: 14
+
+  LambdaLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: nutrition-lambda-deps
+      CompatibleRuntimes:
+        - python3.12
+      Content:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref LayerS3Key
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: sqs-consume
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !ImportValue NutritionMealQueueArn
+        - PolicyName: read-ssm-parameters
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/OPENAI_API_KEY"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/INTERNAL_TOKEN"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nutrition/dev/INTERNAL_API_URL"
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub "ssm.${AWS::Region}.amazonaws.com"
+
+  NutritionLambda:
+    Type: AWS::Lambda::Function
+    DependsOn: LambdaLogGroup
+    Properties:
+      FunctionName: nutrition-lambda
+      Runtime: python3.12
+      Handler: lambda_function.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 300
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref FunctionS3Key
+      Layers:
+        - !Ref LambdaLayer
+      Environment:
+        Variables:
+          OPENAI_API_KEY: !Sub "{{resolve:ssm:/nutrition/dev/OPENAI_API_KEY}}"
+          INTERNAL_TOKEN: !Sub "{{resolve:ssm:/nutrition/dev/INTERNAL_TOKEN}}"
+          INTERNAL_API_URL: !Sub "{{resolve:ssm:/nutrition/dev/INTERNAL_API_URL}}"
+
+  SQSTrigger:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !ImportValue NutritionMealQueueArn
+      FunctionName: !Ref NutritionLambda
+      BatchSize: 1
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+
+Outputs:
+  LambdaFunctionArn:
+    Value: !GetAtt NutritionLambda.Arn
+    Export:
+      Name: NutritionLambdaArn

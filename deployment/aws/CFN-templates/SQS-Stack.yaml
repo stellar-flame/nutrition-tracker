@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SQS queues for the Nutrition application async meal processing pipeline.
+
+Resources:
+  NutritionMealDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: NutritionMealDLQ
+      MessageRetentionPeriod: 1209600  # 14 days
+
+  NutritionMealQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: NutritionMealQueue
+      VisibilityTimeout: 300
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt NutritionMealDLQ.Arn
+        maxReceiveCount: 3
+
+Outputs:
+  QueueUrl:
+    Value: !Ref NutritionMealQueue
+    Export:
+      Name: NutritionMealQueueUrl
+
+  QueueArn:
+    Value: !GetAtt NutritionMealQueue.Arn
+    Export:
+      Name: NutritionMealQueueArn
+
+  DLQArn:
+    Value: !GetAtt NutritionMealDLQ.Arn
+    Export:
+      Name: NutritionMealDLQArn
