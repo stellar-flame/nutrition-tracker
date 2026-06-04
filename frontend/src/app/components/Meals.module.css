@@ -487,3 +487,32 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+/* ===== Save serving row ===== */
+
+.saveRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.saveMealServingBtn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.saveMealServingBtn:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.saveMealServingBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

@@ -7,6 +7,7 @@ export interface MealItem {
     fiberG: number;
     sugarG: number;
     sodiumMg: number;
+    serving_size: number;
 }
 
 export interface Meal {
@@ -16,7 +17,6 @@ export interface Meal {
     date: string;
     time: string;
     created_at: string;
-    serving_size: number;
     status: 'complete';
 }
 
@@ -35,4 +35,3 @@ export interface PendingMeal {
 export interface MealApprovePayload {
     items?: MealItem[];
 }
-

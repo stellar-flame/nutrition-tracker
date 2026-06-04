@@ -6,13 +6,14 @@ from app.models.nutrition_schemas import (
     MealRead,
     MealCreateMinimal,
     MealApprovePayload,
+    MealServingUpdate,
     MealItemBase,
     MealStatus,
     NutritionSummary,
     PendingMealRead,
     PendingMealStatus,
 )
-from app.models.db_models import Meal, MealItem
+from app.models.db_models import Meal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.database.database import get_session
 from app.api.dependencies import get_current_user, get_queue, get_dynamo
@@ -33,13 +34,13 @@ def get_nutrition_summary(
     meal_items = [item for meal in mealreads for item in meal.items]
     return NutritionSummary(
         date=date,
-        caloriesKcal=sum(meal.caloriesKcal for meal in meal_items),
-        proteinG=sum(meal.proteinG for meal in meal_items),
-        carbsG=sum(meal.carbsG for meal in meal_items),
-        fatG=sum(meal.fatG for meal in meal_items),
-        fiberG=sum(meal.fiberG for meal in meal_items),
-        sugarG=sum(meal.sugarG for meal in meal_items),
-        sodiumMg=sum(meal.sodiumMg for meal in meal_items),
+        caloriesKcal=sum(item.caloriesKcal * item.serving_size for item in meal_items),
+        proteinG=sum(item.proteinG * item.serving_size for item in meal_items),
+        carbsG=sum(item.carbsG * item.serving_size for item in meal_items),
+        fatG=sum(item.fatG * item.serving_size for item in meal_items),
+        fiberG=sum(item.fiberG * item.serving_size for item in meal_items),
+        sugarG=sum(item.sugarG * item.serving_size for item in meal_items),
+        sodiumMg=sum(item.sodiumMg * item.serving_size for item in meal_items),
     )
 
 
@@ -113,6 +114,23 @@ def delete_meal(
     if meal.user_id != user.id:
         raise HTTPException(status_code=403, detail="Forbidden")
     meal_repo.delete_meal(db, meal_id)
+
+
+@router.patch("/meals/{meal_id}/serving", response_model=MealRead)
+def update_meal_serving(
+    meal_id: int,
+    payload: MealServingUpdate,
+    db: Session = Depends(get_session),
+    user=Depends(get_current_user),
+):
+    meal = db.get(Meal, meal_id)
+    if not meal:
+        raise HTTPException(status_code=404, detail="Meal not found")
+    if meal.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    updated = meal_repo.update_item_servings(db, meal_id, payload.item_servings)
+    db.refresh(updated)
+    return MealRead.model_validate(updated)
 
 
 @router.post("/meals/{meal_id}/approve", response_model=MealRead, status_code=201)

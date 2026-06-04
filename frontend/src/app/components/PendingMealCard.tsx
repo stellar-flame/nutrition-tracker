@@ -18,7 +18,7 @@ function round2(n: number) {
 
 function scaleItem(item: MealItem, serving: number): MealItem {
   return {
-    description: item.description,
+    ...item,
     caloriesKcal: round2(item.caloriesKcal * serving),
     proteinG: round2(item.proteinG * serving),
     carbsG: round2(item.carbsG * serving),
@@ -70,6 +70,7 @@ export default function PendingMealCard({ meal, onApprove, onDismiss, isApprovin
     );
   }
 
+  // Display uses scaled values for preview; base values + per-item serving_size are sent to backend
   const scaledItems = meal.items.map((item, i) => scaleItem(item, servings[i]));
   const totalKcal = scaledItems
     .filter((_, i) => kept[i])
@@ -90,9 +91,15 @@ export default function PendingMealCard({ meal, onApprove, onDismiss, isApprovin
   };
 
   const handleApprove = () => {
-    const items = meal.items
-      .filter((_, i) => kept[i])
-      .map((item, i) => scaleItem(item, servings[i]));
+    const keptIndices = meal.items
+      .map((_, i) => i)
+      .filter(i => kept[i]);
+
+    const items = keptIndices.map(i => ({
+      ...meal.items[i],
+      serving_size: servings[i],
+    }));
+
     onApprove(items);
   };
 
@@ -108,7 +115,7 @@ export default function PendingMealCard({ meal, onApprove, onDismiss, isApprovin
 
       <ul className={`${styles.mealItems} ${styles.mealItemsExpanded}`}>
         {meal.items.map((item, i) => {
-         if (!kept[i]) return null;
+          if (!kept[i]) return null;
           const scaled = scaledItems[i];
           return (
             <li key={i} className={styles.mealItem}>

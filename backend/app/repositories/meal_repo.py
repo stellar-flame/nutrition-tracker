@@ -52,3 +52,14 @@ def delete_meal(db: Session, meal_id: int) -> Meal | None:
     db.commit()
     return meal
 
+
+def update_item_servings(db: Session, meal_id: int, item_servings: list[float]) -> Meal | None:
+    meal = db.get(Meal, meal_id)
+    if not meal:
+        return None
+    items = db.exec(select(MealItem).where(MealItem.meal_id == meal_id)).all()
+    for i, item in enumerate(items):
+        item.serving_size = item_servings[i]
+    db.commit()
+    return meal
+

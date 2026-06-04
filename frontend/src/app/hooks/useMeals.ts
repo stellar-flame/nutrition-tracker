@@ -38,3 +38,15 @@ export function useDeleteMeal(date: string) {
     },
   });
 }
+
+export function useUpdateServing(date: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ meal_id, item_servings }: { meal_id: number; item_servings: number[] }) =>
+      api.patch(`/nutrition/meals/${meal_id}/serving`, { item_servings }).then(r => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['meals', date] });
+      qc.invalidateQueries({ queryKey: ['nutrition-summary', date] });
+    },
+  });
+}

@@ -32,18 +32,18 @@ class MealBase(SQLModel):
     time: str
     created_at: str
     description: str
-    serving_size: float = 1.0
     status: MealStatus = MealStatus.PENDING
 
 class MealItemBase(SQLModel):
     description: str
-    caloriesKcal: float = 0.0   
+    caloriesKcal: float = 0.0
     proteinG: float = 0.0
     carbsG: float = 0.0
     fatG: float = 0.0
     fiberG: float = 0.0
     sugarG: float = 0.0
     sodiumMg: float = 0.0
+    serving_size: float = 1.0
     
 
 class MealItemRead(MealItemBase):
@@ -88,6 +88,10 @@ class PendingMealRead(BaseModel):
 
 class MealApprovePayload(BaseModel):
     items: List[MealItemBase] | None = None
+
+
+class MealServingUpdate(BaseModel):
+    item_servings: List[float]
 
 
 class NutritionResultPayload(BaseModel):
